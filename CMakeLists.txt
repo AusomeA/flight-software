@@ -13,7 +13,7 @@ find_package(
         Qml
 )
 
-qt_standard_project_setup()
+qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(
     spacecraft_simulator
@@ -43,4 +43,10 @@ target_compile_features(
     spacecraft_simulator
     PRIVATE
         cxx_std_17
+)
+
+target_include_directories(
+    spacecraft_simulator
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/spacecraft_simulator
 )
