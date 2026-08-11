@@ -1,7 +1,26 @@
 import QtQuick
+import QtQuick.Window
 import QtQuick.Controls
+import SpacecraftSimulator
 
 ApplicationWindow {
+    id: root
+
+    /* Timer {
+        interval: 100
+        running: true
+        repeat: false
+        onTriggered: {
+            root.x = (Screen.width - width) / 2;
+            root.y = (Screen.height - height) / 2;
+        }
+    } */
+
+    Spacecraft {
+        id: simulator
+        Component.onCompleted: Start()
+    }
+
     function statusColor(status) {
         switch (status) {
         case 0:
@@ -11,63 +30,87 @@ ApplicationWindow {
         case 2:
             return "red"; // critical
         default:
-            return "white"; // unknown
+            return "white"; // none / unknown
         }
     }
 
     visible: true
-
-    width: 900
-    height: 1080
+    visibility: Window.FullScreen
 
     title: "Spacecraft Simulator"
 
-    font.pixelSize: 32
     color: "black"
 
-    readonly property int labelWidth: 260
-    readonly property int valueWidth: 200
-    readonly property int rowHeight: 40
+    readonly property int readoutRowCount: simulator.readouts.length
+    readonly property int readoutColumnCount: readoutRowCount > 0 ? simulator.readouts[0].length - 1 : 0
+    readonly property int rowHeight: Math.round(height * 0.1)
+    readonly property int baseFontSize: Math.round(rowHeight * 0.45)
+    readonly property int cellPadding: Math.round(baseFontSize * 0.5)
+
+    // Esc Key exits full screen mode and returns to windowed mode, or vice versa
+    Shortcut {
+
+        sequence: "Esc"
+        onActivated: root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen
+    }
 
     ScrollView {
+        id: readoutsScrollView
         anchors.fill: parent
         anchors.margins: 20
 
         Column {
+            id: readoutColumn
+            width: readoutsScrollView.availableWidth
             spacing: 0
 
             Repeater {
-                model: readouts
-                //spacing: 0
+                model: simulator.readouts
 
                 delegate: Row {
+                    id: readoutRow
+                    width: readoutColumn.width
                     required property var modelData
 
                     Rectangle {
-                        width: labelWidth
+                        width: readoutRow.width / readoutColumnCount
                         height: rowHeight
                         color: "black"
                         border.color: "white"
                         border.width: 1
 
                         Label {
+                            anchors.fill: parent
+                            anchors.margins: cellPadding
+                            verticalAlignment: Label.AlignVCenter
+                            horizontalAlignment: Label.AlignHCenter
+                            elide: Text.ElideRight
+
                             text: modelData[0]
-                            width: 260
-                            font.pixelSize: 20
+
+                            font.pixelSize: baseFontSize
                             color: "white"
                         }
                     }
 
                     Rectangle {
-                        width: labelWidth
+                        width: readoutRow.width / readoutColumnCount
                         height: rowHeight
                         color: "black"
                         border.color: "white"
                         border.width: 1
 
                         Label {
+
+                            anchors.fill: parent
+                            anchors.margins: cellPadding
+                            verticalAlignment: Label.AlignVCenter
+                            horizontalAlignment: Label.AlignHCenter
+                            elide: Text.ElideRight
+
                             text: modelData[1]
-                            font.pixelSize: 20
+
+                            font.pixelSize: baseFontSize
                             color: statusColor(modelData[2])
                         }
                     }
