@@ -18,6 +18,7 @@ class SpacecraftSimulator : public QObject
     Q_OBJECT
     QML_NAMED_ELEMENT(Spacecraft)
     Q_PROPERTY(QVariantList readouts READ Readouts NOTIFY readoutsChanged)
+    Q_PROPERTY(double timeScale READ TimeScale NOTIFY timeScaleChanged)
 
 public:
     SpacecraftSimulator(QObject *parent = nullptr);
@@ -30,6 +31,10 @@ public:
     Q_INVOKABLE void Stop();
     void Update(double deltaTimeSeconds);
 
+    Q_INVOKABLE void IncreaseTimeScale();
+    Q_INVOKABLE void DecreaseTimeScale();
+    double TimeScale() const {return timeScale_; }
+
     Status GetBatteryStatus() const;
     Status GetSolarGenerationStatus() const;
     Status GetPowerConsumptionStatus() const;
@@ -37,6 +42,7 @@ public:
 
 signals:
     void readoutsChanged();
+    void timeScaleChanged();
 
 private:
 // Variables
@@ -44,6 +50,7 @@ bool isRunning_;
 
 double missionElapsedTimeSeconds_;
 double updateIntervalSeconds_;
+double timeScale_;
 
 float batteryCapacityWattHours_;
 float batteryEnergyWattHours_;
@@ -76,11 +83,17 @@ static constexpr float temperatureGoodHighCelsius = 30.f;
 static constexpr float temperatureWarningLowCelsius = 5.f;
 static constexpr float temperatureWarningHighCelsius = 35.f;
 
+//static constexpr int realTickMilliseconds = 100;
+static constexpr float minTimeScale = .5f;
+static constexpr float maxTimeScale = 32.f; 
+
 // Functions
 QString MissionElapsedTimeText() const;
 
 QTimer updateTimer_;
 
 float BatteryCalculation() const {return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f;}
+
+void AdvanceOneTick();
 
 };

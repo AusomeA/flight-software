@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QTime>
 #include <cmath>
+#include <algorithm>
 
 using namespace std;
 
@@ -10,6 +11,7 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       isRunning_(false),
       missionElapsedTimeSeconds_(0.0),
       updateIntervalSeconds_(1.0),
+      timeScale_(1.f),
       batteryCapacityWattHours_(45.f),
       batteryEnergyWattHours_(batteryCapacityWattHours_),
       solarGenerationWatts_(40.f),
@@ -22,8 +24,7 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       attitudeSensorHealthy_(true),
       payloadEnabled_(false)
 {
-    connect(&updateTimer_, &QTimer::timeout, this, [this]()
-            { Update(updateIntervalSeconds_); });
+    connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
 }
 
 QVariantList SpacecraftSimulator::Readouts() const
@@ -201,7 +202,7 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     // payloadEnabled_ = false;
 
     // Sun Calculation
-    float timeIntoOrbit = fmod(missionElapsedTimeSeconds_, orbitPeriodSeconds );
+    float timeIntoOrbit = fmod(missionElapsedTimeSeconds_, orbitPeriodSeconds);
     isInSunlight_ = timeIntoOrbit >= eclipsePeriod;
 
     // Watts Calculations
@@ -219,11 +220,23 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     batteryEnergyWattHours_ += netPowerWatts * (deltaTimeSeconds / 3600);
     batteryEnergyWattHours_ = qBound(0.f, batteryEnergyWattHours_, batteryCapacityWattHours_);
 
-    //temperature calculation
-    float targetTemperature =(isInSunlight_ ? sunlitEquilibriumCelsius : eclipseEquilibriumCelsius) + powerConsumptionWatts_ * celsiusPerWatt;
+    // temperature calculation
+    float targetTemperature = (isInSunlight_ ? sunlitEquilibriumCelsius : eclipseEquilibriumCelsius) + powerConsumptionWatts_ * celsiusPerWatt;
     temperatureCelsius_ += (targetTemperature - temperatureCelsius_) * (deltaTimeSeconds / thermalTimeConstantSeconds);
+}
 
-    emit readoutsChanged();
+void SpacecraftSimulator::IncreaseTimeScale()
+{
+    timeScale_ = min(timeScale_ * 2.0, static_cast<double>(maxTimeScale));
+    cout << "Time Scale = " << timeScale_ << endl;
+    emit timeScaleChanged();
+}
+
+void SpacecraftSimulator::DecreaseTimeScale()
+{
+    timeScale_ = max(timeScale_ / 2.0, static_cast<double>(minTimeScale));
+    cout << "Time Scale = " << timeScale_ << endl;
+    emit timeScaleChanged();
 }
 
 Status SpacecraftSimulator::GetBatteryStatus() const
@@ -247,7 +260,7 @@ Status SpacecraftSimulator::GetSolarGenerationStatus() const
         return Status::good;
     else if (solarGenerationWatts_ > 10.f)
         return Status::warning;
-    else 
+    else
         return Status::critical;
 }
 
@@ -287,4 +300,10 @@ QString SpacecraftSimulator::MissionElapsedTimeText() const
                          .arg(hours, 2, 10, QChar('0'))
                          .arg(minutes, 2, 10, QChar('0'))
                          .arg(seconds, 2, 10, QChar('0'));
+}
+
+void SpacecraftSimulator::AdvanceOneTick()
+{
+    Update(updateIntervalSeconds_ * timeScale_);
+    emit readoutsChanged();
 }

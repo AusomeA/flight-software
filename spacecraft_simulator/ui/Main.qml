@@ -49,9 +49,18 @@ ApplicationWindow {
 
     // Esc Key exits full screen mode and returns to windowed mode, or vice versa
     Shortcut {
-
         sequence: "Esc"
         onActivated: root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen
+    }
+
+    Shortcut {
+        sequence: "Right"
+        onActivated: simulator.IncreaseTimeScale()
+    }
+
+    Shortcut {
+        sequence: "Left"
+        onActivated: simulator.DecreaseTimeScale()
     }
 
     ScrollView {
