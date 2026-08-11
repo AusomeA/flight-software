@@ -219,6 +219,10 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     batteryEnergyWattHours_ += netPowerWatts * (deltaTimeSeconds / 3600);
     batteryEnergyWattHours_ = qBound(0.f, batteryEnergyWattHours_, batteryCapacityWattHours_);
 
+    //temperature calculation
+    float targetTemperature =(isInSunlight_ ? sunlitEquilibriumCelsius : eclipseEquilibriumCelsius) + powerConsumptionWatts_ * celsiusPerWatt;
+    temperatureCelsius_ += (targetTemperature - temperatureCelsius_) * (deltaTimeSeconds / thermalTimeConstantSeconds);
+
     emit readoutsChanged();
 }
 
@@ -259,9 +263,9 @@ Status SpacecraftSimulator::GetPowerConsumptionStatus() const
 
 Status SpacecraftSimulator::GetTemperatureStatus() const
 {
-    if (temperatureCelsius_ < 25.f)
+    if (temperatureCelsius_ < temperatureGoodHighCelsius && temperatureCelsius_ > temperatureGoodLowCelsius)
         return Status::good;
-    else if (temperatureCelsius_ < 30.f)
+    else if (temperatureCelsius_ < temperatureWarningHighCelsius && temperatureCelsius_ > temperatureWarningLowCelsius)
         return Status::warning;
     else
         return Status::critical;

@@ -66,6 +66,16 @@ static constexpr float orbitPeriodSeconds = 5400.f; // 90 minutes
 static constexpr float sunlitSeconds = 3000.f;      // 50 minutes
 static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes
 
+static constexpr float sunlitEquilibriumCelsius = 35.f;    // where it settles in sunlight
+static constexpr float eclipseEquilibriumCelsius = -5.f;   // where it settles in darkness
+static constexpr float thermalTimeConstantSeconds = 600.f; // how fast it responds
+static constexpr float celsiusPerWatt = 0.3f;              // internal heat from electronics
+
+static constexpr float temperatureGoodLowCelsius = 10.f;        
+static constexpr float temperatureGoodHighCelsius = 30.f;
+static constexpr float temperatureWarningLowCelsius = 5.f;
+static constexpr float temperatureWarningHighCelsius = 35.f;
+
 // Functions
 QString MissionElapsedTimeText() const;
 
