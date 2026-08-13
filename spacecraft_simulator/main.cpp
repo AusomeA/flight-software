@@ -1,8 +1,5 @@
 #include <QQmlApplicationEngine>
 #include <QGuiApplication>
-#include <QQmlContext>
-#include <iostream>
-
 
 #include "SpacecraftSimulator.h"
 
