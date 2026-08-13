@@ -23,11 +23,11 @@ ApplicationWindow {
 
     function statusColor(status) {
         switch (status) {
-        case 0:
+        case Spacecraft.Status.good:
             return "green"; // good
-        case 1:
+        case Spacecraft.Status.warning:
             return "yellow"; // warning
-        case 2:
+        case Spacecraft.Status.critical:
             return "red"; // critical
         default:
             return "white"; // none / unknown

@@ -251,7 +251,7 @@ void SpacecraftSimulator::DecreaseTimeScale()
     }
 }
 
-Status SpacecraftSimulator::GetBatteryStatus() const
+SpacecraftSimulator::Status SpacecraftSimulator::GetBatteryStatus() const
 {
     float batteryPercentage = BatteryCalculation();
 
@@ -263,7 +263,7 @@ Status SpacecraftSimulator::GetBatteryStatus() const
         return Status::critical;
 }
 
-Status SpacecraftSimulator::GetSolarGenerationStatus() const
+SpacecraftSimulator::Status SpacecraftSimulator::GetSolarGenerationStatus() const
 {
     if (!isInSunlight_)
         return Status::none;
@@ -276,7 +276,7 @@ Status SpacecraftSimulator::GetSolarGenerationStatus() const
         return Status::critical;
 }
 
-Status SpacecraftSimulator::GetPowerConsumptionStatus() const
+SpacecraftSimulator::Status SpacecraftSimulator::GetPowerConsumptionStatus() const
 {
     if (powerConsumptionWatts_ < 25.f)
         return Status::good;
@@ -286,7 +286,7 @@ Status SpacecraftSimulator::GetPowerConsumptionStatus() const
         return Status::critical;
 }
 
-Status SpacecraftSimulator::GetTemperatureStatus() const
+SpacecraftSimulator::Status SpacecraftSimulator::GetTemperatureStatus() const
 {
     if (temperatureCelsius_ <= temperatureGoodHighCelsius && temperatureCelsius_ >= temperatureGoodLowCelsius)
         return Status::good;
