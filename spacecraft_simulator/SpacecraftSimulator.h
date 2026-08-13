@@ -69,19 +69,24 @@ private:
 
     bool payloadEnabled_;
 
-    static constexpr float orbitPeriodSeconds = 5400.f;                        // 90 minutes
-    static constexpr float sunlitSeconds = 3000.f;                             // 50 minutes
-    static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes
+    // Sunlight Variables
+    static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
+    static constexpr float sunlitSeconds = 3000.f;                             // 3000 seconds = 50 minutes
+    static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes (subject to change if other values change)
 
-    static constexpr float sunlitEquilibriumCelsius = 35.f;    // what temp it settles in sunlight
-    static constexpr float eclipseEquilibriumCelsius = -5.f;   // what temp it settles in darkness
-    static constexpr float thermalTimeConstantSeconds = 600.f; // how fast it responds
-    static constexpr float celsiusPerWatt = 0.3f;              // internal heat from electronics
+    // Power Variables
+    static constexpr float basePowerConsumption = 5.f; // how much power is consumed, even in safe mode
+    
 
-    static constexpr float temperatureGoodLowCelsius = 10.f;
-    static constexpr float temperatureGoodHighCelsius = 30.f;
-    static constexpr float temperatureWarningLowCelsius = 5.f;
-    static constexpr float temperatureWarningHighCelsius = 35.f;
+    // Temperature Variables
+    static constexpr float sunlitEquilibriumCelsius = 35.f;     // what temp it settles in sunlight
+    static constexpr float eclipseEquilibriumCelsius = -5.f;    // what temp it settles in darkness
+    static constexpr float thermalTimeConstantSeconds = 600.f;  // how fast it responds
+    static constexpr float celsiusPerWatt = 0.3f;               // internal heat from electronics
+    static constexpr float minTemperatureGoodCelsius = 10.f;    // what temp is still good (minimum)
+    static constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
+    static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
+    static constexpr float maxTemperatureWarningCelsius = 35.f; // what temp is still just a warning (maximum)
 
     // static constexpr int realTickMilliseconds = 100;
     static constexpr float minTimeScale = .5f;

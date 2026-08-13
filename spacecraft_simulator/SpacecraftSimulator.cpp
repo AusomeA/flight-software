@@ -288,9 +288,9 @@ SpacecraftSimulator::Status SpacecraftSimulator::GetPowerConsumptionStatus() con
 
 SpacecraftSimulator::Status SpacecraftSimulator::GetTemperatureStatus() const
 {
-    if (temperatureCelsius_ <= temperatureGoodHighCelsius && temperatureCelsius_ >= temperatureGoodLowCelsius)
+    if (temperatureCelsius_ <= maxTemperatureGoodCelsius && temperatureCelsius_ >= minTemperatureGoodCelsius)
         return Status::good;
-    else if (temperatureCelsius_ <= temperatureWarningHighCelsius && temperatureCelsius_ >= temperatureWarningLowCelsius)
+    else if (temperatureCelsius_ <= maxTemperatureWarningCelsius && temperatureCelsius_ >= minTemperatureWarningCelsius)
         return Status::warning;
     else
         return Status::critical;
