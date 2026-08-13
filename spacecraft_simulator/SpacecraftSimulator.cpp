@@ -33,6 +33,11 @@ QVariantList SpacecraftSimulator::Readouts() const
 
     Status runningStatus = isRunning_ ? Status::good : Status::critical;
 
+    QVariantList timeScaleRow{
+        "Time Scale",
+        QString("%1 x").arg(timeScale_, 0, 'f', 1),
+        static_cast<int>(Status::none)};
+
     QVariantList runningRow{
         "Running",
         isRunning_ ? "Yes" : "No",
@@ -96,8 +101,9 @@ QVariantList SpacecraftSimulator::Readouts() const
     QVariantList payloadRow{
         "Payload Enabled",
         payloadEnabled_ ? "Yes" : "No",
-        static_cast<int>(payloadEnabled_ ? Status::good : Status::critical)};
+        static_cast<int>(payloadEnabled_ ? Status::good : Status::none)};
 
+    readouts.append(QVariant(timeScaleRow));
     readouts.append(QVariant(runningRow));
     readouts.append(QVariant(METRow));
     readouts.append(QVariant(updateIntervalRow));
@@ -150,12 +156,12 @@ void SpacecraftSimulator::PrintState() const
 void SpacecraftSimulator::Start()
 {
     isRunning_ = true;
-    missionElapsedTimeSeconds_ = 0;
 
     updateTimer_.start(static_cast<int>(updateIntervalSeconds_ * 1000));
     cout << "Simulation started." << endl;
 
     ///// Testing Variables //////
+    // missionElapsedTimeSeconds_ = 0;
     // batteryPercentage_ = 20.f;
     // solarGenerationWatts_ = 10.01f;
     // powerConsumptionWatts_ = 34.9f;
@@ -227,16 +233,22 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
 
 void SpacecraftSimulator::IncreaseTimeScale()
 {
-    timeScale_ = min(timeScale_ * 2.0, static_cast<double>(maxTimeScale));
-    cout << "Time Scale = " << timeScale_ << endl;
-    emit timeScaleChanged();
+    if (timeScale_ != maxTimeScale)
+    {
+        timeScale_ = min(timeScale_ * 2.0, static_cast<double>(maxTimeScale));
+        cout << "Time Scale = " << timeScale_ << endl;
+        emit timeScaleChanged();
+    }
 }
 
 void SpacecraftSimulator::DecreaseTimeScale()
 {
-    timeScale_ = max(timeScale_ / 2.0, static_cast<double>(minTimeScale));
-    cout << "Time Scale = " << timeScale_ << endl;
-    emit timeScaleChanged();
+    if (timeScale_ != minTimeScale)
+    {
+        timeScale_ = max(timeScale_ / 2.0, static_cast<double>(minTimeScale));
+        cout << "Time Scale = " << timeScale_ << endl;
+        emit timeScaleChanged();
+    }
 }
 
 Status SpacecraftSimulator::GetBatteryStatus() const
@@ -276,9 +288,9 @@ Status SpacecraftSimulator::GetPowerConsumptionStatus() const
 
 Status SpacecraftSimulator::GetTemperatureStatus() const
 {
-    if (temperatureCelsius_ < temperatureGoodHighCelsius && temperatureCelsius_ > temperatureGoodLowCelsius)
+    if (temperatureCelsius_ <= temperatureGoodHighCelsius && temperatureCelsius_ >= temperatureGoodLowCelsius)
         return Status::good;
-    else if (temperatureCelsius_ < temperatureWarningHighCelsius && temperatureCelsius_ > temperatureWarningLowCelsius)
+    else if (temperatureCelsius_ <= temperatureWarningHighCelsius && temperatureCelsius_ >= temperatureWarningLowCelsius)
         return Status::warning;
     else
         return Status::critical;
