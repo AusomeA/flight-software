@@ -85,7 +85,7 @@ static constexpr float temperatureWarningHighCelsius = 35.f;
 
 //static constexpr int realTickMilliseconds = 100;
 static constexpr float minTimeScale = .5f;
-static constexpr float maxTimeScale = 32.f; 
+static constexpr float maxTimeScale = 64.f; 
 
 // Functions
 QString MissionElapsedTimeText() const;
