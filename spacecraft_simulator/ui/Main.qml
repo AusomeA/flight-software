@@ -61,7 +61,17 @@ ApplicationWindow {
     Shortcut {
         sequence: "Left"
         onActivated: simulator.DecreaseTimeScale()
-    }
+    } 
+
+    Shortcut {
+        sequence: "Up"
+        onActivated: simulator.TestUp()
+    } 
+
+    Shortcut {
+        sequence: "Down"
+        onActivated: simulator.TestDown()
+    } 
 
     ScrollView {
         id: readoutsScrollView

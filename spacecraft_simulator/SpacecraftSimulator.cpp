@@ -8,6 +8,7 @@ using namespace std;
 
 SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     : QObject(parent),
+      mode_(SharedTypes::Mode::nominal),
       isRunning_(false),
       missionElapsedTimeSeconds_(0.0),
       updateIntervalSeconds_(1.0),
@@ -40,6 +41,13 @@ QVariantList SpacecraftSimulator::Readouts() const
         "Time Scale",
         QString("%1 x").arg(timeScale_, 0, 'f', 1),
         static_cast<int>(Status::none)};
+
+    QVariantList modeRow{
+        "Mode",
+        mode_ == SharedTypes::Mode::nominal ? "Nominal" 
+        : mode_ == SharedTypes::Mode::lowPower ? "Low Power" 
+        : "Safe",
+        static_cast<int>(mode_)};
 
     QVariantList runningRow{
         "Running",
@@ -117,6 +125,7 @@ QVariantList SpacecraftSimulator::Readouts() const
         static_cast<int>(payloadEnabled_ ? Status::good : Status::none)};
 
     readouts.append(QVariant(timeScaleRow));
+    readouts.append(QVariant(modeRow));
     readouts.append(QVariant(runningRow));
     readouts.append(QVariant(METRow));
     // readouts.append(QVariant(updateIntervalRow));             No need to display update interval
@@ -428,5 +437,53 @@ void SpacecraftSimulator::RadiatorCheck()
     {
         radiatorLouversOpen_ = false;
         cout << "Radiator louvers closed" << endl;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////// Testing Functions ////////////////////////////////////////////////////
+
+void SpacecraftSimulator::TestUp()
+{
+    if(mode_ == SharedTypes::Mode::nominal)
+    {
+        mode_ = SharedTypes::Mode::lowPower;
+        cout << "mode changed to low power" << endl;
+        emit readoutsChanged();
+    }
+    else if (mode_ == SharedTypes::Mode::lowPower)
+    {
+        mode_ = SharedTypes::Mode::safe;
+        cout << "mode changed to safe" << endl;
+        emit readoutsChanged();
+    }
+}
+
+void SpacecraftSimulator::TestDown()
+{
+     if(mode_ == SharedTypes::Mode::safe)
+     {
+        mode_ = SharedTypes::Mode::lowPower;
+        cout << "mode changed to low power" << endl;
+        emit readoutsChanged();
+     }
+    else if (mode_ == SharedTypes::Mode::lowPower)
+    {
+        mode_ = SharedTypes::Mode::nominal;
+        cout << "mode changed to nominal" << endl;
+        emit readoutsChanged();
     }
 }

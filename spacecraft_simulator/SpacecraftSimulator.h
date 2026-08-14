@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QString>
 #include <QVariant>
+#include "SharedTypes.h"
 
 class SpacecraftSimulator : public QObject
 {
@@ -41,12 +42,22 @@ public:
     Status GetPowerConsumptionStatus() const;
     Status GetTemperatureStatus() const;
 
+    SharedTypes::Mode GetMode() const {return mode_;}
+    void SetMode(SharedTypes::Mode inMode){mode_ = inMode;}
+
+    /////// Testing Functions ////////////
+    Q_INVOKABLE void TestUp();
+    Q_INVOKABLE void TestDown();
+    /////////////////////////////////////
+
 signals:
     void readoutsChanged();
     void timeScaleChanged();
 
 private:
     // Variables
+    SharedTypes::Mode mode_;
+
     bool isRunning_;
 
     double missionElapsedTimeSeconds_;
