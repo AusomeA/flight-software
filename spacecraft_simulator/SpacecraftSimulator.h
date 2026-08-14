@@ -50,8 +50,8 @@ private:
     bool isRunning_;
 
     double missionElapsedTimeSeconds_;
-    double updateIntervalSeconds_;
-    double timeScale_;
+    float updateIntervalSeconds_;
+    float timeScale_;
 
     float batteryCapacityWattHours_;
     float batteryEnergyWattHours_;
@@ -70,6 +70,7 @@ private:
     bool payloadEnabled_;
     bool commsTransmitting_;
     bool heaterEnabled_;
+    bool radiatorLouversOpen_;
 
     // Sunlight Variables
     static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
@@ -84,17 +85,27 @@ private:
     static constexpr float heaterPowerConsumption = 10.f;
 
     // Temperature Variables
-    static constexpr float sunlitEquilibriumCelsius = 35.f;     // what temp it settles in sunlight
+    static constexpr float sunlitEquilibriumCelsius = 32.5f;     // what temp it settles in sunlight
     static constexpr float eclipseEquilibriumCelsius = -5.f;    // what temp it settles in darkness
     static constexpr float thermalTimeConstantSeconds = 600.f;  // how fast it responds
-    static constexpr float celsiusPerWatt = 0.3f;               // internal heat from electronics
+    static constexpr float celsiusPerWatt = 0.8f;               // internal heat from electronics (including heater)
+    static constexpr float louverCoolingCelsius = 10.f;         // how much the radiator cools
     static constexpr float minTemperatureGoodCelsius = 10.f;    // what temp is still good (minimum)
     static constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
     static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
-    static constexpr float maxTemperatureWarningCelsius = 35.f; // what temp is still just a warning (maximum)
+    static constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is still just a warning (maximum)
 
+    // Time Scale Variables
     static constexpr float minTimeScale = .5f;
     static constexpr float maxTimeScale = 64.f;
+
+    // Payload Variables
+    static constexpr float payloadStartTime = 900.f;        // payload begins working start and end windows
+    static constexpr float payloadEndTime = 1500.f;
+
+    // Comms Variables
+    static constexpr float commsStart = 1200.f;            // comms available start and end windows
+    static constexpr float commsEnd = 1800.f;
 
     // Functions
     QString MissionElapsedTimeText() const;
@@ -103,9 +114,12 @@ private:
 
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
 
+    float TimeIntoOrbit() const {return fmod(missionElapsedTimeSeconds_, orbitPeriodSeconds);}
+
     void AdvanceOneTick();
 
     void PayloadCheck();
     void CommsCheck();
     void HeaterCheck();
+    void RadiatorCheck();
 };
