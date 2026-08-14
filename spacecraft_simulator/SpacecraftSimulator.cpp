@@ -22,7 +22,9 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       temperatureSensorHealthy_(true),
       powerSensorHealthy_(true),
       attitudeSensorHealthy_(true),
-      payloadEnabled_(false)
+      payloadEnabled_(false),
+      commsTransmitting_(false),
+      heaterEnabled_(false)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
 }
@@ -207,28 +209,35 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     // attitudeSensorHealthy_ = false;
     // payloadEnabled_ = false;
 
-    // Sun Calculation
+    // sun calculation
     float timeIntoOrbit = fmod(missionElapsedTimeSeconds_, orbitPeriodSeconds);
     isInSunlight_ = timeIntoOrbit >= eclipsePeriod;
 
-    // Watts Calculations
+    // watts calculations
     if (isInSunlight_)
         solarGenerationWatts_ = 40.f;
     else
         solarGenerationWatts_ = 0.f;
 
-    ///////// power consumtion Calculations go here ////////////
-    // powerConsumptionWatts_ =;
+    // power consumtion calculations
+    powerConsumptionWatts_ = basePowerConsumption + avionicsPowerConsumption;
+    if (payloadEnabled_)
+        powerConsumptionWatts_ += payloadPowerConsumption;
+    if (commsTransmitting_)
+        powerConsumptionWatts_ += commsPowerConsumption;
+    if (heaterEnabled_)
+        powerConsumptionWatts_ += heaterPowerConsumption;
 
-    // Battery Calculations
+    // battery calculations
     float netPowerWatts = solarGenerationWatts_ - powerConsumptionWatts_;
 
     batteryEnergyWattHours_ += netPowerWatts * (deltaTimeSeconds / 3600);
     batteryEnergyWattHours_ = qBound(0.f, batteryEnergyWattHours_, batteryCapacityWattHours_);
 
     // temperature calculation
-    float targetTemperature = (isInSunlight_ ? sunlitEquilibriumCelsius : eclipseEquilibriumCelsius) + powerConsumptionWatts_ * celsiusPerWatt;
-    temperatureCelsius_ += (targetTemperature - temperatureCelsius_) * (deltaTimeSeconds / thermalTimeConstantSeconds);
+    float targetTemperature = (isInSunlight_ ? sunlitEquilibriumCelsius : eclipseEquilibriumCelsius) + powerConsumptionWatts_ * celsiusPerWatt;             // where the temperature settles
+    float thermalResponse = 1.f - std::exp(-deltaTimeSeconds / thermalTimeConstantSeconds);                                                                  // needed to calculate exactly (even with increased time scale)
+    temperatureCelsius_ += (targetTemperature - temperatureCelsius_) * thermalResponse;
 }
 
 void SpacecraftSimulator::IncreaseTimeScale()
@@ -318,4 +327,19 @@ void SpacecraftSimulator::AdvanceOneTick()
 {
     Update(updateIntervalSeconds_ * timeScale_);
     emit readoutsChanged();
+}
+
+void SpacecraftSimulator::PayloadCheck()
+{
+
+}
+
+void SpacecraftSimulator::CommsCheck()
+{
+
+}
+
+void SpacecraftSimulator::HeaterCheck()
+{
+
 }

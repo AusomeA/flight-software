@@ -68,15 +68,20 @@ private:
     bool attitudeSensorHealthy_;
 
     bool payloadEnabled_;
+    bool commsTransmitting_;
+    bool heaterEnabled_;
 
     // Sunlight Variables
     static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
     static constexpr float sunlitSeconds = 3000.f;                             // 3000 seconds = 50 minutes
     static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes (subject to change if other values change)
 
-    // Power Variables
-    static constexpr float basePowerConsumption = 5.f; // how much power is consumed, even in safe mode
-    
+    // Power Consumption Variables
+    static constexpr float basePowerConsumption = 5.f;          // how much power is consumed, even in safe mode
+    static constexpr float avionicsPowerConsumption = 8.f;
+    static constexpr float payloadPowerConsumption = 12.f;
+    static constexpr float commsPowerConsumption = 10.f;
+    static constexpr float heaterPowerConsumption = 10.f;
 
     // Temperature Variables
     static constexpr float sunlitEquilibriumCelsius = 35.f;     // what temp it settles in sunlight
@@ -88,7 +93,6 @@ private:
     static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
     static constexpr float maxTemperatureWarningCelsius = 35.f; // what temp is still just a warning (maximum)
 
-    // static constexpr int realTickMilliseconds = 100;
     static constexpr float minTimeScale = .5f;
     static constexpr float maxTimeScale = 64.f;
 
@@ -100,4 +104,8 @@ private:
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
 
     void AdvanceOneTick();
+
+    void PayloadCheck();
+    void CommsCheck();
+    void HeaterCheck();
 };
