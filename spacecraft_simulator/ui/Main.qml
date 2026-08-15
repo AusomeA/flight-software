@@ -61,17 +61,27 @@ ApplicationWindow {
     Shortcut {
         sequence: "Left"
         onActivated: simulator.DecreaseTimeScale()
-    } 
+    }
 
     Shortcut {
         sequence: "Up"
-        onActivated: simulator.TestUp()
-    } 
+        onActivated: simulator.ModeTestUp()
+    }
 
     Shortcut {
         sequence: "Down"
-        onActivated: simulator.TestDown()
-    } 
+        onActivated: simulator.ModeTestDown()
+    }
+
+    Shortcut {
+        sequence: "="
+        onActivated: simulator.BatteryTestUp()
+    }
+
+    Shortcut {
+        sequence: "-"
+        onActivated: simulator.BatteryTestDown()
+    }
 
     ScrollView {
         id: readoutsScrollView

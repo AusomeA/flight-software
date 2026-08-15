@@ -44,9 +44,9 @@ QVariantList SpacecraftSimulator::Readouts() const
 
     QVariantList modeRow{
         "Mode",
-        mode_ == SharedTypes::Mode::nominal ? "Nominal" 
-        : mode_ == SharedTypes::Mode::lowPower ? "Low Power" 
-        : "Safe",
+        mode_ == SharedTypes::Mode::nominal    ? "Nominal"
+        : mode_ == SharedTypes::Mode::lowPower ? "Low Power"
+                                               : "Safe",
         static_cast<int>(mode_)};
 
     QVariantList runningRow{
@@ -235,6 +235,7 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     isInSunlight_ = TimeIntoOrbit() > eclipsePeriod;
 
     // power checks
+    ModeCheck();
     PayloadCheck();
     CommsCheck();
     HeaterCheck();
@@ -370,6 +371,14 @@ void SpacecraftSimulator::AdvanceOneTick()
 
 void SpacecraftSimulator::PayloadCheck()
 {
+    if (mode_ != SharedTypes::Mode::nominal)
+    {
+        if (payloadEnabled_)
+            payloadEnabled_ = false;
+
+        return;
+    }
+
     if (!payloadEnabled_)
     {
         float timeInOrbit = TimeIntoOrbit();
@@ -392,6 +401,53 @@ void SpacecraftSimulator::PayloadCheck()
 
 void SpacecraftSimulator::CommsCheck()
 {
+    if (mode_ == SharedTypes::Mode::safe)
+    {
+        if (!commsTransmitting_)
+        {
+            float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, beaconPeriodSeconds);
+            if (timeIntoBeaconCycle <= beaconTransmitSeconds)
+            {
+                commsTransmitting_ = true;
+                cout << "Comms Transmitting in Safe Mode" << endl;
+            }
+        }
+        else
+        {
+            float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, beaconPeriodSeconds);
+            if (timeIntoBeaconCycle > beaconTransmitSeconds)
+            {
+                commsTransmitting_ = false;
+                cout << "Comms Stopped Transmitting in Safe Mode" << endl;
+            }
+        }
+        return;
+    }
+
+    if (mode_ == SharedTypes::Mode::lowPower)
+    {
+        float commsQuarterWindow = (commsEnd - commsStart) / 4;
+        float timeInOrbit = TimeIntoOrbit();
+
+        if (!commsTransmitting_)
+        {
+            if (timeInOrbit >= commsStart + commsQuarterWindow && timeInOrbit <= commsEnd - commsQuarterWindow)
+            {
+                commsTransmitting_ = true;
+                cout << "Comms Transmitting in Low Power Mode" << endl;
+            }
+        }
+        else
+        {
+            if (timeInOrbit < commsStart + commsQuarterWindow || timeInOrbit > commsEnd - commsQuarterWindow)
+            {
+                commsTransmitting_ = false;
+                cout << "Comms Stopped Transmitting in Low Power Mode" << endl;
+            }
+        }
+        return;
+    }
+
     if (!commsTransmitting_)
     {
         float timeInOrbit = TimeIntoOrbit();
@@ -440,25 +496,55 @@ void SpacecraftSimulator::RadiatorCheck()
     }
 }
 
+void SpacecraftSimulator::ModeCheck()
+{
+    if (mode_ == SharedTypes::Mode::safe)
+        return;
 
+    float batteryCalculation = BatteryCalculation();
 
+    if (mode_ == SharedTypes::Mode::lowPower)
+    {
+        if (batteryCalculation > 45.f && temperatureSensorHealthy_ && powerSensorHealthy_ && attitudeSensorHealthy_)
+        {
+            mode_ = SharedTypes::Mode::nominal;
+            cout << "Spacecraft returned to nominal" << endl;
+        }
+    }
 
+    QString safeModeReasons;
 
+    if (batteryCalculation < 25.f)
+        safeModeReasons += "Battery below 25%\n";
+    if (!temperatureSensorHealthy_)
+        safeModeReasons += "Temperature sensor failed\n";
+    if (!powerSensorHealthy_)
+        safeModeReasons += "Power sensor failed\n";
+    if (!attitudeSensorHealthy_)
+        safeModeReasons += "Attitude sensor failed\n";
 
+    if (!safeModeReasons.isEmpty())
+    {
+        mode_ = SharedTypes::Mode::safe;
+        cout << "Spacecraft in safe mode because:" << endl << safeModeReasons.toStdString();
+    }
+    else if (batteryCalculation < 35.f && !isInSunlight_ && eclipsePeriod - TimeIntoOrbit() > eclipsePeriod / 3)
+    {
+        if (mode_ == SharedTypes::Mode::lowPower)
+            return;
 
-
-
-
-
-
-
+        mode_ = SharedTypes::Mode::lowPower;
+        cout << "Spacecraft in low power mode because:" << endl
+             << "Battery below 35% and more than 1/3 of the eclipse remaining" << endl;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// Testing Functions ////////////////////////////////////////////////////
 
-void SpacecraftSimulator::TestUp()
+void SpacecraftSimulator::ModeTestUp()
 {
-    if(mode_ == SharedTypes::Mode::nominal)
+    if (mode_ == SharedTypes::Mode::nominal)
     {
         mode_ = SharedTypes::Mode::lowPower;
         cout << "mode changed to low power" << endl;
@@ -472,18 +558,36 @@ void SpacecraftSimulator::TestUp()
     }
 }
 
-void SpacecraftSimulator::TestDown()
+void SpacecraftSimulator::ModeTestDown()
 {
-     if(mode_ == SharedTypes::Mode::safe)
-     {
+    if (mode_ == SharedTypes::Mode::safe)
+    {
         mode_ = SharedTypes::Mode::lowPower;
         cout << "mode changed to low power" << endl;
         emit readoutsChanged();
-     }
+    }
     else if (mode_ == SharedTypes::Mode::lowPower)
     {
         mode_ = SharedTypes::Mode::nominal;
         cout << "mode changed to nominal" << endl;
         emit readoutsChanged();
     }
+}
+
+void SpacecraftSimulator::BatteryTestUp()
+{
+    batteryEnergyWattHours_ += 10.f;
+
+    cout << "Battery added by 10 for testing" << endl;
+
+    emit readoutsChanged();
+}
+
+void SpacecraftSimulator::BatteryTestDown()
+{
+    batteryEnergyWattHours_ -= 10.f;
+
+    cout << "Battery dropped by 10 for testing" << endl;
+
+    emit readoutsChanged();
 }

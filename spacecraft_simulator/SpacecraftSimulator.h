@@ -46,8 +46,10 @@ public:
     void SetMode(SharedTypes::Mode inMode){mode_ = inMode;}
 
     /////// Testing Functions ////////////
-    Q_INVOKABLE void TestUp();
-    Q_INVOKABLE void TestDown();
+    Q_INVOKABLE void ModeTestUp();
+    Q_INVOKABLE void ModeTestDown();
+    Q_INVOKABLE void BatteryTestUp();
+    Q_INVOKABLE void BatteryTestDown();
     /////////////////////////////////////
 
 signals:
@@ -64,8 +66,8 @@ private:
     float updateIntervalSeconds_;
     float timeScale_;
 
-    float batteryCapacityWattHours_;
-    float batteryEnergyWattHours_;
+    float batteryCapacityWattHours_;          // Total capacity of battery
+    float batteryEnergyWattHours_;            // How much juice is in the battery
 
     float solarGenerationWatts_;
     float powerConsumptionWatts_;
@@ -109,7 +111,6 @@ private:
     // Time Scale Variables
     static constexpr float minTimeScale = .5f;
     static constexpr float maxTimeScale = 64.f;
-
     // Payload Variables
     static constexpr float payloadStartTime = 900.f;        // payload begins working start and end windows
     static constexpr float payloadEndTime = 1500.f;
@@ -117,6 +118,9 @@ private:
     // Comms Variables
     static constexpr float commsStart = 1200.f;            // comms available start and end windows
     static constexpr float commsEnd = 1800.f;
+
+    static constexpr float beaconPeriodSeconds = 150.f;     // safe mode beacon times
+    static constexpr float beaconTransmitSeconds = 15.f;    // transmit for this many seconds every beacon period
 
     // Functions
     QString MissionElapsedTimeText() const;
@@ -133,4 +137,5 @@ private:
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();
+    void ModeCheck();
 };
