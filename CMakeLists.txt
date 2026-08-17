@@ -43,7 +43,7 @@ target_link_libraries(
 target_compile_features(
     spacecraft_simulator
     PRIVATE
-        cxx_std_17
+        cxx_std_20
 )
 
 target_include_directories(

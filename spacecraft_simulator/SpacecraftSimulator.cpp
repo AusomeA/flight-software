@@ -45,7 +45,7 @@ QVariantList SpacecraftSimulator::Readouts() const
     QVariantList modeRow{
         "Mode",
         mode_ == SharedTypes::Mode::nominal    ? "Nominal"
-        : mode_ == SharedTypes::Mode::lowPower ? "Low Power"
+        : mode_ == SharedTypes::Mode::degraded ? "Degraded"
                                                : "Safe",
         static_cast<int>(mode_)};
 
@@ -409,7 +409,7 @@ void SpacecraftSimulator::CommsCheck()
             if (timeIntoBeaconCycle <= beaconTransmitSeconds)
             {
                 commsTransmitting_ = true;
-                cout << "Comms Transmitting in Safe Mode" << endl;
+                cout << "Comms Transmitting in Safe Mode (Beacon Mode)" << endl;
             }
         }
         else
@@ -418,13 +418,13 @@ void SpacecraftSimulator::CommsCheck()
             if (timeIntoBeaconCycle > beaconTransmitSeconds)
             {
                 commsTransmitting_ = false;
-                cout << "Comms Stopped Transmitting in Safe Mode" << endl;
+                cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)+" << endl;
             }
         }
         return;
     }
 
-    if (mode_ == SharedTypes::Mode::lowPower)
+    if (mode_ == SharedTypes::Mode::degraded)
     {
         float commsQuarterWindow = (commsEnd - commsStart) / 4;
         float timeInOrbit = TimeIntoOrbit();
@@ -434,7 +434,7 @@ void SpacecraftSimulator::CommsCheck()
             if (timeInOrbit >= commsStart + commsQuarterWindow && timeInOrbit <= commsEnd - commsQuarterWindow)
             {
                 commsTransmitting_ = true;
-                cout << "Comms Transmitting in Low Power Mode" << endl;
+                cout << "Comms Transmitting in Degraded Mode" << endl;
             }
         }
         else
@@ -442,7 +442,7 @@ void SpacecraftSimulator::CommsCheck()
             if (timeInOrbit < commsStart + commsQuarterWindow || timeInOrbit > commsEnd - commsQuarterWindow)
             {
                 commsTransmitting_ = false;
-                cout << "Comms Stopped Transmitting in Low Power Mode" << endl;
+                cout << "Comms Stopped Transmitting in Degraded Mode" << endl;
             }
         }
         return;
@@ -503,7 +503,7 @@ void SpacecraftSimulator::ModeCheck()
 
     float batteryCalculation = BatteryCalculation();
 
-    if (mode_ == SharedTypes::Mode::lowPower)
+    if (mode_ == SharedTypes::Mode::degraded)
     {
         if (batteryCalculation > 45.f && temperatureSensorHealthy_ && powerSensorHealthy_ && attitudeSensorHealthy_)
         {
@@ -530,11 +530,11 @@ void SpacecraftSimulator::ModeCheck()
     }
     else if (batteryCalculation < 35.f && !isInSunlight_ && eclipsePeriod - TimeIntoOrbit() > eclipsePeriod / 3)
     {
-        if (mode_ == SharedTypes::Mode::lowPower)
+        if (mode_ == SharedTypes::Mode::degraded)
             return;
 
-        mode_ = SharedTypes::Mode::lowPower;
-        cout << "Spacecraft in low power mode because:" << endl
+        mode_ = SharedTypes::Mode::degraded;
+        cout << "Spacecraft in degraded mode because:" << endl
              << "Battery below 35% and more than 1/3 of the eclipse remaining" << endl;
     }
 }
@@ -546,11 +546,11 @@ void SpacecraftSimulator::ModeTestUp()
 {
     if (mode_ == SharedTypes::Mode::nominal)
     {
-        mode_ = SharedTypes::Mode::lowPower;
-        cout << "mode changed to low power" << endl;
+        mode_ = SharedTypes::Mode::degraded;
+        cout << "mode changed to degraded" << endl;
         emit readoutsChanged();
     }
-    else if (mode_ == SharedTypes::Mode::lowPower)
+    else if (mode_ == SharedTypes::Mode::degraded)
     {
         mode_ = SharedTypes::Mode::safe;
         cout << "mode changed to safe" << endl;
@@ -562,11 +562,11 @@ void SpacecraftSimulator::ModeTestDown()
 {
     if (mode_ == SharedTypes::Mode::safe)
     {
-        mode_ = SharedTypes::Mode::lowPower;
-        cout << "mode changed to low power" << endl;
+        mode_ = SharedTypes::Mode::degraded;
+        cout << "mode changed to degraded" << endl;
         emit readoutsChanged();
     }
-    else if (mode_ == SharedTypes::Mode::lowPower)
+    else if (mode_ == SharedTypes::Mode::degraded)
     {
         mode_ = SharedTypes::Mode::nominal;
         cout << "mode changed to nominal" << endl;

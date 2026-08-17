@@ -8,7 +8,7 @@ namespace SharedTypes{
 
     enum class Mode{
         nominal,
-        lowPower,
+        degraded,
         safe
     };
     Q_ENUM_NS(Mode)
