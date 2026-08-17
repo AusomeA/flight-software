@@ -526,7 +526,8 @@ void SpacecraftSimulator::ModeCheck()
     if (!safeModeReasons.isEmpty())
     {
         mode_ = SharedTypes::Mode::safe;
-        cout << "Spacecraft in safe mode because:" << endl << safeModeReasons.toStdString();
+        cout << "Spacecraft in safe mode because:" << endl
+             << safeModeReasons.toStdString();
     }
     else if (batteryCalculation < 35.f && !isInSunlight_ && eclipsePeriod - TimeIntoOrbit() > eclipsePeriod / 3)
     {
@@ -590,4 +591,48 @@ void SpacecraftSimulator::BatteryTestDown()
     cout << "Battery dropped by 10 for testing" << endl;
 
     emit readoutsChanged();
+}
+
+void SpacecraftSimulator::ToggleSensorFault(int sensorIndex)
+{
+    switch (sensorIndex)
+    {
+    case 0:
+        temperatureSensorHealthy_ = !temperatureSensorHealthy_;
+        cout << "temperature sensor healthy is " << (temperatureSensorHealthy_ ? "true" : "false") << endl;
+        break;
+    case 1:
+        powerSensorHealthy_ = !powerSensorHealthy_;
+        cout << "power sensor healthy is " << (powerSensorHealthy_ ? "true" : "false") << endl;
+        break;
+    case 2:
+        attitudeSensorHealthy_ = !attitudeSensorHealthy_;
+        cout << "attitude sensor healthy is " << (attitudeSensorHealthy_ ? "true" : "false") << endl;
+        break;
+    default:
+        cout << "incorect input" << endl;
+        break;
+    }
+}
+
+void SpacecraftSimulator::FailRandomSensor(int sensorIndex)
+{
+    switch (sensorIndex)
+    {
+    case 0:
+        temperatureSensorHealthy_ = false;
+        cout << "temperature sensor failed" << endl;
+        break;
+    case 1:
+        powerSensorHealthy_ = false;
+        cout << "power sensor failed" << endl;
+        break;
+    case 2:
+        attitudeSensorHealthy_ = false;
+        cout << "attitude sensor failed" << endl;
+        break;
+    default:
+        cout << "random failure function failed (wrong index?)" << endl;
+        break;
+    }
 }

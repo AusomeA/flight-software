@@ -37,6 +37,9 @@ public:
     Q_INVOKABLE void DecreaseTimeScale();
     double TimeScale() const { return timeScale_; }
 
+    Q_INVOKABLE void ToggleSensorFault(int sensorIndex);
+    Q_INVOKABLE void FailRandomSensor(int sensorIndex);
+
     Status GetBatteryStatus() const;
     Status GetSolarGenerationStatus() const;
     Status GetPowerConsumptionStatus() const;

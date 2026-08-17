@@ -83,6 +83,26 @@ ApplicationWindow {
         onActivated: simulator.BatteryTestDown()
     }
 
+    Shortcut{
+        sequence: "s,0"
+        onActivated: simulator.ToggleSensorFault(0)
+    }
+
+    Shortcut{
+        sequence: "s,1"
+        onActivated: simulator.ToggleSensorFault(1)
+    }
+
+    Shortcut{
+        sequence: "s,2"
+        onActivated: simulator.ToggleSensorFault(2)
+    }
+
+    Shortcut{
+        sequence: "f"
+        onActivated: simulator.FailRandomSensor( Math.floor( Math.random()*3 ))
+    }
+
     ScrollView {
         id: readoutsScrollView
         anchors.fill: parent
