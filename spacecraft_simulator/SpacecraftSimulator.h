@@ -38,7 +38,9 @@ public:
     double TimeScale() const { return timeScale_; }
 
     Q_INVOKABLE void ToggleSensorFault(int sensorIndex);
-    Q_INVOKABLE void FailRandomSensor(int sensorIndex);
+    Q_INVOKABLE void FailRandomSensor(int randomNumber);
+
+    Q_INVOKABLE void ToggleChaosMode();
 
     Status GetBatteryStatus() const;
     Status GetSolarGenerationStatus() const;
@@ -87,6 +89,9 @@ private:
     bool commsTransmitting_;
     bool heaterEnabled_;
     bool radiatorLouversOpen_;
+
+    bool chaosEnabled_;
+    static constexpr float meanSecondsBetweenFaults = 300.f;     // the mean seconds before a fault happens in chaos mode
 
     // Sunlight Variables
     static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes

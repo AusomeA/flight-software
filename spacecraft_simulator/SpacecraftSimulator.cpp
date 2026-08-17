@@ -3,6 +3,7 @@
 #include <QTime>
 #include <cmath>
 #include <algorithm>
+#include <QRandomGenerator>
 
 using namespace std;
 
@@ -26,7 +27,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       payloadEnabled_(false),
       commsTransmitting_(false),
       heaterEnabled_(false),
-      radiatorLouversOpen_(false)
+      radiatorLouversOpen_(false),
+      chaosEnabled_(false)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
 }
@@ -58,11 +60,6 @@ QVariantList SpacecraftSimulator::Readouts() const
         "MET",
         MissionElapsedTimeText(),
         static_cast<int>(Status::none)};
-
-    // QVariantList updateIntervalRow{                                           No need to display update interval
-    //     "Update Interval",
-    //     QString("%1 s").arg(updateIntervalSeconds_, 0, 'f', 0),
-    //     static_cast<int>(Status::none)};
 
     QVariantList batteryRow{
         "Battery",
@@ -102,7 +99,12 @@ QVariantList SpacecraftSimulator::Readouts() const
     QVariantList commsRow{
         "Comms Available",
         communicationsAvailable_ ? "Yes" : "No",
-        static_cast<int>(communicationsAvailable_ ? Status::good : Status::critical)};
+        static_cast<int>(communicationsAvailable_ ? Status::good : Status::none)};
+
+    QVariantList commsTransmittingRow{
+        "Comms Transmitting",
+        commsTransmitting_ ? "Yes" : "No",
+        static_cast<int>(commsTransmitting_ ? Status::good : Status::none)};
 
     QVariantList temperatureSensorRow{
         "Temp Sensor OK",
@@ -128,7 +130,6 @@ QVariantList SpacecraftSimulator::Readouts() const
     readouts.append(QVariant(modeRow));
     readouts.append(QVariant(runningRow));
     readouts.append(QVariant(METRow));
-    // readouts.append(QVariant(updateIntervalRow));             No need to display update interval
     readouts.append(QVariant(batteryRow));
     readouts.append(QVariant(solarGenerationRow));
     readouts.append(QVariant(powerConsumptionRow));
@@ -137,6 +138,7 @@ QVariantList SpacecraftSimulator::Readouts() const
     readouts.append(QVariant(radiatorRow));
     readouts.append(QVariant(sunlightRow));
     readouts.append(QVariant(commsRow));
+    readouts.append(QVariant(commsTransmittingRow));
     readouts.append(QVariant(temperatureSensorRow));
     readouts.append(QVariant(powerSensorRow));
     readouts.append(QVariant(attitudeSensorRow));
@@ -218,21 +220,14 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
 
     missionElapsedTimeSeconds_ += deltaTimeSeconds;
 
-    // batteryPercentage_ = 20.f;
-    // solarGenerationWatts_ = 10.01f;
-    // powerConsumptionWatts_ = 34.9f;
-
-    // temperatureCelsius_ = 29.9f;
-    // isInSunlight_ = false;
-
     // communicationsAvailable_ = false;
-    // temperatureSensorHealthy_ = false;
-    // powerSensorHealthy_ = false;
-    // attitudeSensorHealthy_ = false;
-    // payloadEnabled_ = false;
 
     // sun calculation
     isInSunlight_ = TimeIntoOrbit() > eclipsePeriod;
+
+    // fault injection
+    if (chaosEnabled_ && QRandomGenerator::global()->generateDouble() < deltaTimeSeconds / meanSecondsBetweenFaults)
+        FailRandomSensor(QRandomGenerator::global()->bounded(3));
 
     // power checks
     ModeCheck();
@@ -401,6 +396,9 @@ void SpacecraftSimulator::PayloadCheck()
 
 void SpacecraftSimulator::CommsCheck()
 {
+    float timeInOrbit = TimeIntoOrbit();
+    communicationsAvailable_ = timeInOrbit >= commsStart && timeInOrbit <= commsEnd;
+
     if (mode_ == SharedTypes::Mode::safe)
     {
         if (!commsTransmitting_)
@@ -418,7 +416,7 @@ void SpacecraftSimulator::CommsCheck()
             if (timeIntoBeaconCycle > beaconTransmitSeconds)
             {
                 commsTransmitting_ = false;
-                cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)+" << endl;
+                cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)" << endl;
             }
         }
         return;
@@ -427,7 +425,6 @@ void SpacecraftSimulator::CommsCheck()
     if (mode_ == SharedTypes::Mode::degraded)
     {
         float commsQuarterWindow = (commsEnd - commsStart) / 4;
-        float timeInOrbit = TimeIntoOrbit();
 
         if (!commsTransmitting_)
         {
@@ -450,7 +447,6 @@ void SpacecraftSimulator::CommsCheck()
 
     if (!commsTransmitting_)
     {
-        float timeInOrbit = TimeIntoOrbit();
         if (timeInOrbit >= commsStart && timeInOrbit <= commsEnd && BatteryCalculation() > 10.f)
         {
             commsTransmitting_ = true;
@@ -459,7 +455,6 @@ void SpacecraftSimulator::CommsCheck()
     }
     else
     {
-        float timeInOrbit = TimeIntoOrbit();
         if (timeInOrbit > commsEnd || timeInOrbit < commsStart)
         {
             commsTransmitting_ = false;
@@ -610,14 +605,14 @@ void SpacecraftSimulator::ToggleSensorFault(int sensorIndex)
         cout << "attitude sensor healthy is " << (attitudeSensorHealthy_ ? "true" : "false") << endl;
         break;
     default:
-        cout << "incorect input" << endl;
+        cout << "incorrect input" << endl;
         break;
     }
 }
 
-void SpacecraftSimulator::FailRandomSensor(int sensorIndex)
+void SpacecraftSimulator::FailRandomSensor(int randomNumber)
 {
-    switch (sensorIndex)
+    switch (randomNumber)
     {
     case 0:
         temperatureSensorHealthy_ = false;
@@ -635,4 +630,10 @@ void SpacecraftSimulator::FailRandomSensor(int sensorIndex)
         cout << "random failure function failed (wrong index?)" << endl;
         break;
     }
+}
+
+void SpacecraftSimulator::ToggleChaosMode()
+{
+    chaosEnabled_ = !chaosEnabled_;
+    cout << "Chaos mode " << (chaosEnabled_ ? "on" : "off") << endl;
 }
