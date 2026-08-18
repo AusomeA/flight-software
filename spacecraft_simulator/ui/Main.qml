@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import QtQuick.Layouts
 import SpacecraftSimulator
 
 ApplicationWindow {
@@ -41,8 +42,6 @@ ApplicationWindow {
 
     color: "black"
 
-    readonly property int readoutRowCount: simulator.readouts.length
-    readonly property int readoutColumnCount: readoutRowCount > 0 ? simulator.readouts[0].length - 1 : 0
     readonly property int rowHeight: Math.round(height * 0.1)
     readonly property int baseFontSize: Math.round(rowHeight * 0.45)
     readonly property int cellPadding: Math.round(baseFontSize * 0.5)
@@ -119,16 +118,19 @@ ApplicationWindow {
             spacing: 0
 
             Repeater {
-                model: simulator.readouts
+                model: simulator.readoutsModel
 
-                delegate: Row {
+                delegate: RowLayout {
                     id: readoutRow
                     width: readoutColumn.width
-                    required property var modelData
+                    spacing: 0
+                    required property string label
+                    required property string value
+                    required property int status
 
                     Rectangle {
-                        width: readoutRow.width / readoutColumnCount
-                        height: rowHeight
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: rowHeight
                         color: "black"
                         border.color: "white"
                         border.width: 1
@@ -140,7 +142,7 @@ ApplicationWindow {
                             horizontalAlignment: Label.AlignHCenter
                             elide: Text.ElideRight
 
-                            text: modelData[0]
+                            text: readoutRow.label
 
                             font.pixelSize: baseFontSize
                             color: "white"
@@ -148,8 +150,8 @@ ApplicationWindow {
                     }
 
                     Rectangle {
-                        width: readoutRow.width / readoutColumnCount
-                        height: rowHeight
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: rowHeight
                         color: "black"
                         border.color: "white"
                         border.width: 1
@@ -162,10 +164,10 @@ ApplicationWindow {
                             horizontalAlignment: Label.AlignHCenter
                             elide: Text.ElideRight
 
-                            text: modelData[1]
+                            text: readoutRow.value
 
                             font.pixelSize: baseFontSize
-                            color: statusColor(modelData[2])
+                            color: statusColor(readoutRow.status)
                         }
                     }
                 }

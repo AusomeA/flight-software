@@ -33,120 +33,6 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
 }
 
-QVariantList SpacecraftSimulator::Readouts() const
-{
-    QVariantList readouts;
-
-    Status runningStatus = isRunning_ ? Status::good : Status::critical;
-
-    QVariantList timeScaleRow{
-        "Time Scale",
-        QString("%1 x").arg(timeScale_, 0, 'f', 1),
-        static_cast<int>(Status::none)};
-
-    QVariantList modeRow{
-        "Mode",
-        mode_ == SharedTypes::Mode::nominal    ? "Nominal"
-        : mode_ == SharedTypes::Mode::degraded ? "Degraded"
-                                               : "Safe",
-        static_cast<int>(mode_)};
-
-    QVariantList runningRow{
-        "Running",
-        isRunning_ ? "Yes" : "No",
-        static_cast<int>(runningStatus)};
-
-    QVariantList METRow{
-        "MET",
-        MissionElapsedTimeText(),
-        static_cast<int>(Status::none)};
-
-    QVariantList batteryRow{
-        "Battery",
-        QString("%1 %").arg(BatteryCalculation(), 0, 'f', 1),
-        static_cast<int>(GetBatteryStatus())};
-
-    QVariantList solarGenerationRow{
-        "Solar Generation",
-        QString("%1 W").arg(solarGenerationWatts_, 0, 'f', 1),
-        static_cast<int>(GetSolarGenerationStatus())};
-
-    QVariantList powerConsumptionRow{
-        "Power Consumption",
-        QString("%1 W").arg(powerConsumptionWatts_, 0, 'f', 1),
-        static_cast<int>(GetPowerConsumptionStatus())};
-
-    QVariantList temperatureRow{
-        "Temperature",
-        QString("%1 C").arg(temperatureCelsius_, 0, 'f', 1),
-        static_cast<int>(GetTemperatureStatus())};
-
-    QVariantList heaterRow{
-        "Heater",
-        heaterEnabled_ ? "On" : "Off",
-        static_cast<int>(Status::none)};
-
-    QVariantList radiatorRow{
-        "Radiator Louvers",
-        radiatorLouversOpen_ ? "Open" : "Shut",
-        static_cast<int>(Status::none)};
-
-    QVariantList sunlightRow{
-        "In Sunlight",
-        isInSunlight_ ? "Yes" : "No",
-        static_cast<int>(isInSunlight_ ? Status::good : Status::none)};
-
-    QVariantList commsRow{
-        "Comms Available",
-        communicationsAvailable_ ? "Yes" : "No",
-        static_cast<int>(communicationsAvailable_ ? Status::good : Status::none)};
-
-    QVariantList commsTransmittingRow{
-        "Comms Transmitting",
-        commsTransmitting_ ? "Yes" : "No",
-        static_cast<int>(commsTransmitting_ ? Status::good : Status::none)};
-
-    QVariantList temperatureSensorRow{
-        "Temp Sensor OK",
-        temperatureSensorHealthy_ ? "Yes" : "No",
-        static_cast<int>(temperatureSensorHealthy_ ? Status::good : Status::critical)};
-
-    QVariantList powerSensorRow{
-        "Power Sensor OK",
-        powerSensorHealthy_ ? "Yes" : "No",
-        static_cast<int>(powerSensorHealthy_ ? Status::good : Status::critical)};
-
-    QVariantList attitudeSensorRow{
-        "Attitude Sensor OK",
-        attitudeSensorHealthy_ ? "Yes" : "No",
-        static_cast<int>(attitudeSensorHealthy_ ? Status::good : Status::critical)};
-
-    QVariantList payloadRow{
-        "Payload Enabled",
-        payloadEnabled_ ? "Yes" : "No",
-        static_cast<int>(payloadEnabled_ ? Status::good : Status::none)};
-
-    readouts.append(QVariant(timeScaleRow));
-    readouts.append(QVariant(modeRow));
-    readouts.append(QVariant(runningRow));
-    readouts.append(QVariant(METRow));
-    readouts.append(QVariant(batteryRow));
-    readouts.append(QVariant(solarGenerationRow));
-    readouts.append(QVariant(powerConsumptionRow));
-    readouts.append(QVariant(temperatureRow));
-    readouts.append(QVariant(heaterRow));
-    readouts.append(QVariant(radiatorRow));
-    readouts.append(QVariant(sunlightRow));
-    readouts.append(QVariant(commsRow));
-    readouts.append(QVariant(commsTransmittingRow));
-    readouts.append(QVariant(temperatureSensorRow));
-    readouts.append(QVariant(powerSensorRow));
-    readouts.append(QVariant(attitudeSensorRow));
-    readouts.append(QVariant(payloadRow));
-
-    return readouts;
-}
-
 QString SpacecraftSimulator::StateText() const
 {
     QString text;
@@ -199,7 +85,7 @@ void SpacecraftSimulator::Start()
     // attitudeSensorHealthy_ = false;
     // payloadEnabled_ = false;
 
-    emit readoutsChanged();
+    PopulateReadouts();
 }
 
 void SpacecraftSimulator::Stop()
@@ -207,7 +93,7 @@ void SpacecraftSimulator::Stop()
     isRunning_ = false;
     updateTimer_.stop();
     cout << "Simulation stopped." << endl;
-    emit readoutsChanged();
+    UpdateReadouts();
 }
 
 void SpacecraftSimulator::Update(double deltaTimeSeconds)
@@ -272,7 +158,7 @@ void SpacecraftSimulator::IncreaseTimeScale()
         timeScale_ = min(timeScale_ * 2.0, static_cast<double>(maxTimeScale));
         cout << "Time Scale = " << timeScale_ << endl;
         emit timeScaleChanged();
-        emit readoutsChanged();
+        UpdateReadouts();
     }
 }
 
@@ -283,7 +169,7 @@ void SpacecraftSimulator::DecreaseTimeScale()
         timeScale_ = max(timeScale_ / 2.0, static_cast<double>(minTimeScale));
         cout << "Time Scale = " << timeScale_ << endl;
         emit timeScaleChanged();
-        emit readoutsChanged();
+        UpdateReadouts();
     }
 }
 
@@ -361,7 +247,7 @@ void SpacecraftSimulator::AdvanceOneTick()
         simulatedSeconds -= physicsStepSeconds;
     }
 
-    emit readoutsChanged();
+    UpdateReadouts();
 }
 
 void SpacecraftSimulator::PayloadCheck()
@@ -535,6 +421,56 @@ void SpacecraftSimulator::ModeCheck()
     }
 }
 
+void SpacecraftSimulator::PopulateReadouts()
+{
+    QVector<ReadoutRow> rows{
+        {"Time Scale", "", 0},
+        {"Mode", "", 0},
+        {"Running", "", 0},
+        {"MET", "", 0},
+        {"Battery", "", 0},
+        {"Solar Generation", "", 0},
+        {"Power Consumption", "", 0},
+        {"Temperature", "", 0},
+        {"Heater", "", 0},
+        {"Radiator Louvers", "", 0},
+        {"In Sunlight", "", 0},
+        {"Comms Available", "", 0},
+        {"Comms Transmitting", "", 0},
+        {"Temp Sensor OK", "", 0},
+        {"Power Sensor OK", "", 0},
+        {"Attitude Sensor OK", "", 0},
+        {"Payload Enabled", "", 0}};
+
+    readoutsModel_.SetRows(rows);
+    UpdateReadouts();
+}
+
+void SpacecraftSimulator::UpdateReadouts()
+{
+    Status runningStatus = isRunning_ ? Status::good : Status::critical;
+
+    readoutsModel_.UpdateRow(timeScaleRow, QString("%1 x").arg(timeScale_, 0, 'f', 1), static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(modeRow, mode_ == SharedTypes::Mode::nominal ? "Nominal" : mode_ == SharedTypes::Mode::degraded ? "Degraded"
+                                                                                                                             : "Safe",
+                             static_cast<int>(mode_));
+    readoutsModel_.UpdateRow(runningRow, isRunning_ ? "Yes" : "No", static_cast<int>(runningStatus));
+    readoutsModel_.UpdateRow(METRow, MissionElapsedTimeText(), static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(batteryRow, QString("%1 %").arg(BatteryCalculation(), 0, 'f', 1), static_cast<int>(GetBatteryStatus()));
+    readoutsModel_.UpdateRow(solarGenerationRow, QString("%1 W").arg(solarGenerationWatts_, 0, 'f', 1), static_cast<int>(GetSolarGenerationStatus()));
+    readoutsModel_.UpdateRow(powerConsumptionRow, QString("%1 W").arg(powerConsumptionWatts_, 0, 'f', 1), static_cast<int>(GetPowerConsumptionStatus()));
+    readoutsModel_.UpdateRow(temperatureRow, QString("%1 C").arg(temperatureCelsius_, 0, 'f', 1), static_cast<int>(GetTemperatureStatus()));
+    readoutsModel_.UpdateRow(heaterRow, heaterEnabled_ ? "On" : "Off", static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(radiatorRow, radiatorLouversOpen_ ? "Open" : "Shut", static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(sunlightRow, isInSunlight_ ? "Yes" : "No", static_cast<int>(isInSunlight_ ? Status::good : Status::none));
+    readoutsModel_.UpdateRow(commsRow, communicationsAvailable_ ? "Yes" : "No", static_cast<int>(communicationsAvailable_ ? Status::good : Status::none));
+    readoutsModel_.UpdateRow(commsTransmittingRow, commsTransmitting_ ? "Yes" : "No", static_cast<int>(commsTransmitting_ ? Status::good : Status::none));
+    readoutsModel_.UpdateRow(temperatureSensorRow, temperatureSensorHealthy_ ? "Yes" : "No", static_cast<int>(temperatureSensorHealthy_ ? Status::good : Status::critical));
+    readoutsModel_.UpdateRow(powerSensorRow, powerSensorHealthy_ ? "Yes" : "No", static_cast<int>(powerSensorHealthy_ ? Status::good : Status::critical));
+    readoutsModel_.UpdateRow(attitudeSensorRow, attitudeSensorHealthy_ ? "Yes" : "No", static_cast<int>(attitudeSensorHealthy_ ? Status::good : Status::critical));
+    readoutsModel_.UpdateRow(payloadRow, payloadEnabled_ ? "Yes" : "No", static_cast<int>(payloadEnabled_ ? Status::good : Status::none));
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// Testing Functions ////////////////////////////////////////////////////
 
@@ -544,13 +480,13 @@ void SpacecraftSimulator::ModeTestUp()
     {
         mode_ = SharedTypes::Mode::degraded;
         cout << "mode changed to degraded" << endl;
-        emit readoutsChanged();
+        UpdateReadouts();
     }
     else if (mode_ == SharedTypes::Mode::degraded)
     {
         mode_ = SharedTypes::Mode::safe;
         cout << "mode changed to safe" << endl;
-        emit readoutsChanged();
+        UpdateReadouts();
     }
 }
 
@@ -560,32 +496,28 @@ void SpacecraftSimulator::ModeTestDown()
     {
         mode_ = SharedTypes::Mode::degraded;
         cout << "mode changed to degraded" << endl;
-        emit readoutsChanged();
+        UpdateReadouts();
     }
     else if (mode_ == SharedTypes::Mode::degraded)
     {
         mode_ = SharedTypes::Mode::nominal;
         cout << "mode changed to nominal" << endl;
-        emit readoutsChanged();
+        UpdateReadouts();
     }
 }
 
 void SpacecraftSimulator::BatteryTestUp()
 {
     batteryEnergyWattHours_ += 10.f;
-
     cout << "Battery added by 10 for testing" << endl;
-
-    emit readoutsChanged();
+    UpdateReadouts();
 }
 
 void SpacecraftSimulator::BatteryTestDown()
 {
     batteryEnergyWattHours_ -= 10.f;
-
     cout << "Battery dropped by 10 for testing" << endl;
-
-    emit readoutsChanged();
+    UpdateReadouts();
 }
 
 void SpacecraftSimulator::ToggleSensorFault(int sensorIndex)
