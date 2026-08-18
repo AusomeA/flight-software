@@ -115,8 +115,6 @@ private:
 
     bool chaosEnabled_;
     static constexpr float meanSecondsBetweenFaults = 10800.f; // the mean seconds before a fault happens in chaos mode (10800 = 2 x 90 min orbits)
-
-    // double lastGroundContactSeconds_;
     
     ReadoutsModel readoutsModel_;
     
@@ -173,7 +171,6 @@ private:
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();
-    //void ModeCheck();
 
     void PopulateReadouts();
     void UpdateReadouts();
