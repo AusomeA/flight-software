@@ -28,8 +28,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       commsTransmitting_(false),
       heaterEnabled_(false),
       radiatorLouversOpen_(false),
-      chaosEnabled_(false),
-      lastGroundContactSeconds_(0.0)
+      chaosEnabled_(false)
+      //lastGroundContactSeconds_(0.0)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
 }
@@ -117,7 +117,7 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
         FailRandomSensor(QRandomGenerator::global()->bounded(3));
 
     // power checks
-    ModeCheck();
+    //ModeCheck();
     PayloadCheck();
     CommsCheck();
     HeaterCheck();
@@ -286,8 +286,8 @@ void SpacecraftSimulator::CommsCheck()
     float timeInOrbit = TimeIntoOrbit();
     communicationsAvailable_ = timeInOrbit >= commsStart && timeInOrbit <= commsEnd;
 
-    if(communicationsAvailable_ && commsTransmitting_)
-        lastGroundContactSeconds_ = missionElapsedTimeSeconds_;
+    //if(communicationsAvailable_ && commsTransmitting_)
+    //    lastGroundContactSeconds_ = missionElapsedTimeSeconds_;
 
     if (mode_ == SharedTypes::Mode::safe)
     {
@@ -381,51 +381,51 @@ void SpacecraftSimulator::RadiatorCheck()
     }
 }
 
-void SpacecraftSimulator::ModeCheck()
-{
-    if (mode_ == SharedTypes::Mode::safe)
-        return;
+// void SpacecraftSimulator::ModeCheck()
+// {
+//     if (mode_ == SharedTypes::Mode::safe)
+//         return;
 
-    float batteryCalculation = BatteryCalculation();
+//     float batteryCalculation = BatteryCalculation();
 
-    if (mode_ == SharedTypes::Mode::degraded)
-    {
-        if (batteryCalculation > 45.f && temperatureSensorHealthy_ && powerSensorHealthy_ && attitudeSensorHealthy_)
-        {
-            mode_ = SharedTypes::Mode::nominal;
-            cout << "Spacecraft returned to nominal" << endl;
-        }
-    }
+//     if (mode_ == SharedTypes::Mode::degraded)
+//     {
+//         if (batteryCalculation > 45.f && temperatureSensorHealthy_ && powerSensorHealthy_ && attitudeSensorHealthy_)
+//         {
+//             mode_ = SharedTypes::Mode::nominal;
+//             cout << "Spacecraft returned to nominal" << endl;
+//         }
+//     }
 
-    QString safeModeReasons;
+//     QString safeModeReasons;
 
-    if (batteryCalculation < 25.f)
-        safeModeReasons += "Battery below 25%\n";
-    if (!temperatureSensorHealthy_)
-        safeModeReasons += "Temperature sensor failed\n";
-    if (!powerSensorHealthy_)
-        safeModeReasons += "Power sensor failed\n";
-    if (!attitudeSensorHealthy_)
-        safeModeReasons += "Attitude sensor failed\n";
-    if (missionElapsedTimeSeconds_ - lastGroundContactSeconds_ > maxSecondsWithoutGroundContact_)
-        safeModeReasons += "No ground contact\n";
+//     if (batteryCalculation < 25.f)
+//         safeModeReasons += "Battery below 25%\n";
+//     if (!temperatureSensorHealthy_)
+//         safeModeReasons += "Temperature sensor failed\n";
+//     if (!powerSensorHealthy_)
+//         safeModeReasons += "Power sensor failed\n";
+//     if (!attitudeSensorHealthy_)
+//         safeModeReasons += "Attitude sensor failed\n";
+//     if (missionElapsedTimeSeconds_ - lastGroundContactSeconds_ > maxSecondsWithoutGroundContact_)
+//         safeModeReasons += "No ground contact\n";
 
-    if (!safeModeReasons.isEmpty())
-    {
-        mode_ = SharedTypes::Mode::safe;
-        cout << "Spacecraft in safe mode because:" << endl
-             << safeModeReasons.toStdString();
-    }
-    else if (batteryCalculation < 35.f && !isInSunlight_ && eclipsePeriod - TimeIntoOrbit() > eclipsePeriod / 3)
-    {
-        if (mode_ == SharedTypes::Mode::degraded)
-            return;
+//     if (!safeModeReasons.isEmpty())
+//     {
+//         mode_ = SharedTypes::Mode::safe;
+//         cout << "Spacecraft in safe mode because:" << endl
+//              << safeModeReasons.toStdString();
+//     }
+//     else if (batteryCalculation < 35.f && !isInSunlight_ && eclipsePeriod - TimeIntoOrbit() > eclipsePeriod / 3)
+//     {
+//         if (mode_ == SharedTypes::Mode::degraded)
+//             return;
 
-        mode_ = SharedTypes::Mode::degraded;
-        cout << "Spacecraft in degraded mode because:" << endl
-             << "Battery below 35% and more than 1/3 of the eclipse remaining" << endl;
-    }
-}
+//         mode_ = SharedTypes::Mode::degraded;
+//         cout << "Spacecraft in degraded mode because:" << endl
+//              << "Battery below 35% and more than 1/3 of the eclipse remaining" << endl;
+//     }
+// }
 
 void SpacecraftSimulator::PopulateReadouts()
 {

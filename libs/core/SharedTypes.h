@@ -24,8 +24,9 @@ namespace SharedTypes
         bool temperatureSensorHealthy = true;
         bool powerSensorHealthy = true;
         bool attitudeSensorHealthy = true;
-        bool comminicationsAvailable = false;
+        bool communicationsAvailable = false;
         bool commsTransmitting = false;
+        float secondsUntilSunrise = 0.f;
     };
 
     struct Commands

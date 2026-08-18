@@ -116,7 +116,7 @@ private:
     bool chaosEnabled_;
     static constexpr float meanSecondsBetweenFaults = 10800.f; // the mean seconds before a fault happens in chaos mode (10800 = 2 x 90 min orbits)
 
-    double lastGroundContactSeconds_;
+    // double lastGroundContactSeconds_;
     
     ReadoutsModel readoutsModel_;
     
@@ -158,8 +158,6 @@ private:
     static constexpr float beaconPeriodSeconds = 150.f;  // safe mode beacon times
     static constexpr float beaconTransmitSeconds = 15.f; // transmit for this many seconds every beacon period
     
-    static constexpr float maxSecondsWithoutGroundContact_ = 10800;  // max amount of time without contact before we go into safe mode
-
     // Functions
     QString MissionElapsedTimeText() const;
 
@@ -175,7 +173,7 @@ private:
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();
-    void ModeCheck();
+    //void ModeCheck();
 
     void PopulateReadouts();
     void UpdateReadouts();
