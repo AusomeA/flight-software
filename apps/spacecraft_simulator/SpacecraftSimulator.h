@@ -25,6 +25,7 @@ enum ReadoutRowIndex
     powerSensorRow,
     attitudeSensorRow,
     payloadRow,
+    chaosRow,
     readoutRowCount
 };
 

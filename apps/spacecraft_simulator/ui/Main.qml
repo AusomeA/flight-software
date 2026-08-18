@@ -42,7 +42,8 @@ ApplicationWindow {
 
     color: "black"
 
-    readonly property int rowHeight: Math.round(height * 0.1)
+    readonly property int readoutRowCount: Math.max(1, Math.ceil(readoutRepeater.count / 2))
+    readonly property int rowHeight: Math.floor(readoutGrid.height / readoutRowCount)
     readonly property int baseFontSize: Math.round(rowHeight * 0.45)
     readonly property int cellPadding: Math.round(baseFontSize * 0.5)
 
@@ -107,22 +108,27 @@ ApplicationWindow {
         onActivated: simulator.ToggleChaosMode()
     }
 
-    ScrollView {
-        id: readoutsScrollView
-        anchors.fill: parent
-        anchors.margins: 20
+    //ScrollView {
+    //    id: readoutsScrollView
+    //    anchors.fill: parent
+    //    anchors.margins: 20
 
-        Column {
-            id: readoutColumn
-            width: readoutsScrollView.availableWidth
-            spacing: 0
+        Grid {
+            id: readoutGrid
+            //width: readoutsScrollView.availableWidth
+            anchors.fill: parent
+            anchors.margins: 10
+            columns: 2
+            rowSpacing: 0
+            columnSpacing: 10
 
             Repeater {
+                id: readoutRepeater
                 model: simulator.readoutsModel
 
                 delegate: RowLayout {
                     id: readoutRow
-                    width: readoutColumn.width
+                    width: (readoutGrid.width - readoutGrid.columnSpacing) / readoutGrid.columns
                     spacing: 0
                     required property string label
                     required property string value
@@ -141,6 +147,8 @@ ApplicationWindow {
                             verticalAlignment: Label.AlignVCenter
                             horizontalAlignment: Label.AlignHCenter
                             elide: Text.ElideRight
+                            fontSizeMode: Text.Fit
+                            minimumPixelSize: 8
 
                             text: readoutRow.label
 
@@ -163,6 +171,8 @@ ApplicationWindow {
                             verticalAlignment: Label.AlignVCenter
                             horizontalAlignment: Label.AlignHCenter
                             elide: Text.ElideRight
+                            fontSizeMode: Text.Fit
+                            minimumPixelSize: 8
 
                             text: readoutRow.value
 
@@ -173,5 +183,5 @@ ApplicationWindow {
                 }
             }
         }
-    }
+    //}
 }

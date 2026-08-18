@@ -446,7 +446,8 @@ void SpacecraftSimulator::PopulateReadouts()
         {"Temp Sensor OK", "", 0},
         {"Power Sensor OK", "", 0},
         {"Attitude Sensor OK", "", 0},
-        {"Payload Enabled", "", 0}};
+        {"Payload Enabled", "", 0},
+        {"Chaos Enabled", "", 0}};
 
     readoutsModel_.SetRows(rows);
     UpdateReadouts();
@@ -475,6 +476,7 @@ void SpacecraftSimulator::UpdateReadouts()
     readoutsModel_.UpdateRow(powerSensorRow, powerSensorHealthy_ ? "Yes" : "No", static_cast<int>(powerSensorHealthy_ ? Status::good : Status::critical));
     readoutsModel_.UpdateRow(attitudeSensorRow, attitudeSensorHealthy_ ? "Yes" : "No", static_cast<int>(attitudeSensorHealthy_ ? Status::good : Status::critical));
     readoutsModel_.UpdateRow(payloadRow, payloadEnabled_ ? "Yes" : "No", static_cast<int>(payloadEnabled_ ? Status::good : Status::none));
+    readoutsModel_.UpdateRow(chaosRow, chaosEnabled_ ? "Yes" : "No", static_cast<int>(Status::none));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
