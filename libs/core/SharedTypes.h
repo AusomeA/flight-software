@@ -2,14 +2,34 @@
 #include <QObject>
 #include <QQmlEngine>
 
-namespace SharedTypes{
+namespace SharedTypes
+{
     Q_NAMESPACE
     QML_ELEMENT
 
-    enum class Mode{
+    enum class Mode
+    {
         nominal,
         degraded,
         safe
     };
     Q_ENUM_NS(Mode)
+
+    struct Telemetry
+    {
+        double missionElapsedTimeSeconds = 0.0;
+        float batteryPercent = 0.f;
+        float temperatureCelsius = 0.f;
+        bool isInSunlight = false;
+        bool temperatureSensorHealthy = true;
+        bool powerSensorHealthy = true;
+        bool attitudeSensorHealthy = true;
+        bool comminicationsAvailable = false;
+        bool commsTransmitting = false;
+    };
+
+    struct Commands
+    {
+        Mode mode = Mode::nominal;
+    };
 }

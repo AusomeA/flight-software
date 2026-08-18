@@ -9,20 +9,22 @@ project(
 find_package(
     Qt6
     REQUIRED COMPONENTS
-        Quick
-        Qml
+    Quick
+    Qml
 )
 
 qt_standard_project_setup(REQUIRES 6.5)
 
 qt_add_executable(
     spacecraft_simulator
-    spacecraft_simulator/main.cpp
-    spacecraft_simulator/SpacecraftSimulator.cpp
-    spacecraft_simulator/SpacecraftSimulator.h
-    spacecraft_simulator/SharedTypes.h
-    spacecraft_simulator/ReadoutsModel.h
-    spacecraft_simulator/ReadoutsModel.cpp
+    apps/spacecraft_simulator/main.cpp
+    apps/spacecraft_simulator/SpacecraftSimulator.cpp
+    apps/spacecraft_simulator/SpacecraftSimulator.h
+    apps/spacecraft_simulator/ReadoutsModel.h
+    apps/spacecraft_simulator/ReadoutsModel.cpp
+    apps/flight_computer/FlightComputer.h
+    apps/flight_computer/FlightComputer.cpp
+    libs/core/SharedTypes.h
 )
 
 qt_add_qml_module(
@@ -32,24 +34,26 @@ qt_add_qml_module(
     VERSION 1.0
 
     QML_FILES
-        spacecraft_simulator/ui/Main.qml
+    apps/spacecraft_simulator/ui/Main.qml
 )
 
 target_link_libraries(
     spacecraft_simulator
     PRIVATE
-        Qt6::Quick
-        Qt6::Qml
+    Qt6::Quick
+    Qt6::Qml
 )
 
 target_compile_features(
     spacecraft_simulator
     PRIVATE
-        cxx_std_20
+    cxx_std_20
 )
 
 target_include_directories(
     spacecraft_simulator
     PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/spacecraft_simulator
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/spacecraft_simulator
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
 )
