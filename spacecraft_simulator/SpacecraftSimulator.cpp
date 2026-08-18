@@ -28,7 +28,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       commsTransmitting_(false),
       heaterEnabled_(false),
       radiatorLouversOpen_(false),
-      chaosEnabled_(false)
+      chaosEnabled_(false),
+      lastGroundContactSeconds_(0.0)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
 }
@@ -285,6 +286,9 @@ void SpacecraftSimulator::CommsCheck()
     float timeInOrbit = TimeIntoOrbit();
     communicationsAvailable_ = timeInOrbit >= commsStart && timeInOrbit <= commsEnd;
 
+    if(communicationsAvailable_ && commsTransmitting_)
+        lastGroundContactSeconds_ = missionElapsedTimeSeconds_;
+
     if (mode_ == SharedTypes::Mode::safe)
     {
         if (!commsTransmitting_)
@@ -403,6 +407,8 @@ void SpacecraftSimulator::ModeCheck()
         safeModeReasons += "Power sensor failed\n";
     if (!attitudeSensorHealthy_)
         safeModeReasons += "Attitude sensor failed\n";
+    if (missionElapsedTimeSeconds_ - lastGroundContactSeconds_ > maxSecondsWithoutGroundContact_)
+        safeModeReasons += "No ground contact\n";
 
     if (!safeModeReasons.isEmpty())
     {
