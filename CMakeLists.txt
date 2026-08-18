@@ -21,6 +21,8 @@ qt_add_executable(
     spacecraft_simulator/SpacecraftSimulator.cpp
     spacecraft_simulator/SpacecraftSimulator.h
     spacecraft_simulator/SharedTypes.h
+    spacecraft_simulator/ReadoutsModel.h
+    spacecraft_simulator/ReadoutsModel.cpp
 )
 
 qt_add_qml_module(
