@@ -5,6 +5,7 @@
 #include <QString>
 #include "SharedTypes.h"
 #include "ReadoutsModel.h"
+#include "FlightComputer.h" ///////// just for testing, remove later /////////////////
 
 enum ReadoutRowIndex
 {
@@ -70,7 +71,6 @@ public:
     Status GetTemperatureStatus() const;
 
     SharedTypes::Mode GetMode() const { return mode_; }
-    void SetMode(SharedTypes::Mode inMode) { mode_ = inMode; }
 
     QAbstractItemModel *ReadoutsModelPtr() { return &readoutsModel_; }
 
@@ -117,6 +117,7 @@ private:
     static constexpr float meanSecondsBetweenFaults = 10800.f; // the mean seconds before a fault happens in chaos mode (10800 = 2 x 90 min orbits)
     
     ReadoutsModel readoutsModel_;
+    FlightComputer flightComputer_;
     
     // Sunlight Variables
     static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
@@ -166,6 +167,8 @@ private:
     float TimeIntoOrbit() const { return fmod(missionElapsedTimeSeconds_, orbitPeriodSeconds); }
 
     void AdvanceOneTick();
+
+    SharedTypes::Telemetry BuildTelemetry() const;
 
     void PayloadCheck();
     void CommsCheck();

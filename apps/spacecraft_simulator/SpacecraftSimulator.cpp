@@ -106,14 +106,16 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
 
     missionElapsedTimeSeconds_ += deltaTimeSeconds;
 
-    // communicationsAvailable_ = false;
-
     // sun calculation
     isInSunlight_ = TimeIntoOrbit() > eclipsePeriod;
 
     // fault injection
     if (chaosEnabled_ && QRandomGenerator::global()->generateDouble() < deltaTimeSeconds / meanSecondsBetweenFaults)
         FailRandomSensor(QRandomGenerator::global()->bounded(3));
+
+    //////////////////// flight computer (for testing, delete later)//////////////////////
+    SharedTypes::Commands commands = flightComputer_.Update(BuildTelemetry());
+    mode_ = commands.mode;
 
     // power checks
     PayloadCheck();
@@ -247,6 +249,22 @@ void SpacecraftSimulator::AdvanceOneTick()
     }
 
     UpdateReadouts();
+}
+
+SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
+{
+    SharedTypes::Telemetry telemetry;
+    telemetry.missionElapsedTimeSeconds = missionElapsedTimeSeconds_;
+    telemetry.batteryPercent            = BatteryCalculation();
+    telemetry.temperatureCelsius        = temperatureCelsius_;
+    telemetry.isInSunlight              = isInSunlight_;
+    telemetry.secondsUntilSunrise       = isInSunlight_ ? 0.f : eclipsePeriod - TimeIntoOrbit();
+    telemetry.temperatureSensorHealthy  = temperatureSensorHealthy_;
+    telemetry.powerSensorHealthy        = powerSensorHealthy_;
+    telemetry.attitudeSensorHealthy     = attitudeSensorHealthy_;
+    telemetry.communicationsAvailable   = communicationsAvailable_;
+    telemetry.commsTransmitting         = commsTransmitting_;
+    return telemetry;
 }
 
 void SpacecraftSimulator::PayloadCheck()

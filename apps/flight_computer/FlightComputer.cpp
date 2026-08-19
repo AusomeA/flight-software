@@ -20,9 +20,6 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
 
     SharedTypes::Commands commands;
     commands.mode = mode_;
-
-    cout << "Flight Computer Update" << endl;
-
     return commands;
 }
 
