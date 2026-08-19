@@ -174,49 +174,49 @@ void SpacecraftSimulator::DecreaseTimeScale()
     }
 }
 
-SpacecraftSimulator::Status SpacecraftSimulator::GetBatteryStatus() const
+SharedTypes::Status SpacecraftSimulator::GetBatteryStatus() const
 {
     float batteryPercentage = BatteryCalculation();
 
     if (batteryPercentage > 50.f)
-        return Status::good;
+        return SharedTypes::Status::good;
     else if (batteryPercentage > 20.f)
-        return Status::warning;
+        return SharedTypes::Status::warning;
     else
-        return Status::critical;
+        return SharedTypes::Status::critical;
 }
 
-SpacecraftSimulator::Status SpacecraftSimulator::GetSolarGenerationStatus() const
+SharedTypes::Status SpacecraftSimulator::GetSolarGenerationStatus() const
 {
     if (!isInSunlight_)
-        return Status::none;
+        return SharedTypes::Status::none;
 
     if (solarGenerationWatts_ > 30.f)
-        return Status::good;
+        return SharedTypes::Status::good;
     else if (solarGenerationWatts_ > 10.f)
-        return Status::warning;
+        return SharedTypes::Status::warning;
     else
-        return Status::critical;
+        return SharedTypes::Status::critical;
 }
 
-SpacecraftSimulator::Status SpacecraftSimulator::GetPowerConsumptionStatus() const
+SharedTypes::Status SpacecraftSimulator::GetPowerConsumptionStatus() const
 {
     if (powerConsumptionWatts_ < 33.75f) // if ran through entire eclipse, would break even on power consumption
-        return Status::good;
+        return SharedTypes::Status::good;
     else if (powerConsumptionWatts_ < 46.f) // 45 watts is everything running at once. Should not go above 45 watts and should only use 45 watts sparingly.
-        return Status::warning;
+        return SharedTypes::Status::warning;
     else
-        return Status::critical;
+        return SharedTypes::Status::critical;
 }
 
-SpacecraftSimulator::Status SpacecraftSimulator::GetTemperatureStatus() const
+SharedTypes::Status SpacecraftSimulator::GetTemperatureStatus() const
 {
     if (temperatureCelsius_ <= maxTemperatureGoodCelsius && temperatureCelsius_ >= minTemperatureGoodCelsius)
-        return Status::good;
+        return SharedTypes::Status::good;
     else if (temperatureCelsius_ <= maxTemperatureWarningCelsius && temperatureCelsius_ >= minTemperatureWarningCelsius)
-        return Status::warning;
+        return SharedTypes::Status::warning;
     else
-        return Status::critical;
+        return SharedTypes::Status::critical;
 }
 
 QString SpacecraftSimulator::MissionElapsedTimeText() const
@@ -422,28 +422,28 @@ void SpacecraftSimulator::PopulateReadouts()
 
 void SpacecraftSimulator::UpdateReadouts()
 {
-    Status runningStatus = isRunning_ ? Status::good : Status::critical;
+    SharedTypes::Status runningStatus = isRunning_ ? SharedTypes::Status::good : SharedTypes::Status::critical;
 
-    readoutsModel_.UpdateRow(timeScaleRow, QString("%1 x").arg(timeScale_, 0, 'f', 1), static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(timeScaleRow, QString("%1 x").arg(timeScale_, 0, 'f', 1), static_cast<int>(SharedTypes::Status::none));
     readoutsModel_.UpdateRow(modeRow, mode_ == SharedTypes::Mode::nominal ? "Nominal" : mode_ == SharedTypes::Mode::degraded ? "Degraded"
                                                                                                                              : "Safe",
                              static_cast<int>(mode_));
     readoutsModel_.UpdateRow(runningRow, isRunning_ ? "Yes" : "No", static_cast<int>(runningStatus));
-    readoutsModel_.UpdateRow(METRow, MissionElapsedTimeText(), static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(METRow, MissionElapsedTimeText(), static_cast<int>(SharedTypes::Status::none));
     readoutsModel_.UpdateRow(batteryRow, QString("%1 %").arg(BatteryCalculation(), 0, 'f', 1), static_cast<int>(GetBatteryStatus()));
     readoutsModel_.UpdateRow(solarGenerationRow, QString("%1 W").arg(solarGenerationWatts_, 0, 'f', 1), static_cast<int>(GetSolarGenerationStatus()));
     readoutsModel_.UpdateRow(powerConsumptionRow, QString("%1 W").arg(powerConsumptionWatts_, 0, 'f', 1), static_cast<int>(GetPowerConsumptionStatus()));
     readoutsModel_.UpdateRow(temperatureRow, QString("%1 C").arg(temperatureCelsius_, 0, 'f', 1), static_cast<int>(GetTemperatureStatus()));
-    readoutsModel_.UpdateRow(heaterRow, heaterEnabled_ ? "On" : "Off", static_cast<int>(Status::none));
-    readoutsModel_.UpdateRow(radiatorRow, radiatorLouversOpen_ ? "Open" : "Shut", static_cast<int>(Status::none));
-    readoutsModel_.UpdateRow(sunlightRow, isInSunlight_ ? "Yes" : "No", static_cast<int>(isInSunlight_ ? Status::good : Status::none));
-    readoutsModel_.UpdateRow(commsRow, communicationsAvailable_ ? "Yes" : "No", static_cast<int>(communicationsAvailable_ ? Status::good : Status::none));
-    readoutsModel_.UpdateRow(commsTransmittingRow, commsTransmitting_ ? "Yes" : "No", static_cast<int>(commsTransmitting_ ? Status::good : Status::none));
-    readoutsModel_.UpdateRow(temperatureSensorRow, temperatureSensorHealthy_ ? "Yes" : "No", static_cast<int>(temperatureSensorHealthy_ ? Status::good : Status::critical));
-    readoutsModel_.UpdateRow(powerSensorRow, powerSensorHealthy_ ? "Yes" : "No", static_cast<int>(powerSensorHealthy_ ? Status::good : Status::critical));
-    readoutsModel_.UpdateRow(attitudeSensorRow, attitudeSensorHealthy_ ? "Yes" : "No", static_cast<int>(attitudeSensorHealthy_ ? Status::good : Status::critical));
-    readoutsModel_.UpdateRow(payloadRow, payloadEnabled_ ? "Yes" : "No", static_cast<int>(payloadEnabled_ ? Status::good : Status::none));
-    readoutsModel_.UpdateRow(chaosRow, chaosEnabled_ ? "Yes" : "No", static_cast<int>(Status::none));
+    readoutsModel_.UpdateRow(heaterRow, heaterEnabled_ ? "On" : "Off", static_cast<int>(SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(radiatorRow, radiatorLouversOpen_ ? "Open" : "Shut", static_cast<int>(SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(sunlightRow, isInSunlight_ ? "Yes" : "No", static_cast<int>(isInSunlight_ ? SharedTypes::Status::good : SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(commsRow, communicationsAvailable_ ? "Yes" : "No", static_cast<int>(communicationsAvailable_ ? SharedTypes::Status::good : SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(commsTransmittingRow, commsTransmitting_ ? "Yes" : "No", static_cast<int>(commsTransmitting_ ? SharedTypes::Status::good : SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(temperatureSensorRow, temperatureSensorHealthy_ ? "Yes" : "No", static_cast<int>(temperatureSensorHealthy_ ? SharedTypes::Status::good : SharedTypes::Status::critical));
+    readoutsModel_.UpdateRow(powerSensorRow, powerSensorHealthy_ ? "Yes" : "No", static_cast<int>(powerSensorHealthy_ ? SharedTypes::Status::good : SharedTypes::Status::critical));
+    readoutsModel_.UpdateRow(attitudeSensorRow, attitudeSensorHealthy_ ? "Yes" : "No", static_cast<int>(attitudeSensorHealthy_ ? SharedTypes::Status::good : SharedTypes::Status::critical));
+    readoutsModel_.UpdateRow(payloadRow, payloadEnabled_ ? "Yes" : "No", static_cast<int>(payloadEnabled_ ? SharedTypes::Status::good : SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(chaosRow, chaosEnabled_ ? "Yes" : "No", static_cast<int>(SharedTypes::Status::none));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,15 @@ namespace SharedTypes
     };
     Q_ENUM_NS(Mode)
 
+    enum class Status
+    {
+        good,
+        warning,
+        critical,
+        none
+    };
+    Q_ENUM_NS(Status)
+
     struct Telemetry
     {
         double missionElapsedTimeSeconds = 0.0;

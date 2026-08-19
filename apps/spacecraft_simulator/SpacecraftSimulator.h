@@ -38,14 +38,6 @@ class SpacecraftSimulator : public QObject
     Q_PROPERTY(QAbstractItemModel *readoutsModel READ ReadoutsModelPtr CONSTANT)
 
 public:
-    enum class Status
-    {
-        good,
-        warning,
-        critical,
-        none
-    };
-    Q_ENUM(Status)
 
     SpacecraftSimulator(QObject *parent = nullptr);
 
@@ -65,10 +57,10 @@ public:
 
     Q_INVOKABLE void ToggleChaosMode();
 
-    Status GetBatteryStatus() const;
-    Status GetSolarGenerationStatus() const;
-    Status GetPowerConsumptionStatus() const;
-    Status GetTemperatureStatus() const;
+    SharedTypes::Status GetBatteryStatus() const;
+    SharedTypes::Status GetSolarGenerationStatus() const;
+    SharedTypes::Status GetPowerConsumptionStatus() const;
+    SharedTypes::Status GetTemperatureStatus() const;
 
     SharedTypes::Mode GetMode() const { return mode_; }
 
