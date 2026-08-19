@@ -78,11 +78,13 @@ void FlightComputer::ModeTestUp()
     {
         mode_ = SharedTypes::Mode::degraded;
         cout << "mode changed to degraded" << endl;
+        lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
     }
     else if (mode_ == SharedTypes::Mode::degraded)
     {
         mode_ = SharedTypes::Mode::safe;
         cout << "mode changed to safe" << endl;
+        lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
     }
 }
 
@@ -92,10 +94,12 @@ void FlightComputer::ModeTestDown()
     {
         mode_ = SharedTypes::Mode::degraded;
         cout << "mode changed to degraded" << endl;
+        lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
     }
     else if (mode_ == SharedTypes::Mode::degraded)
     {
         mode_ = SharedTypes::Mode::nominal;
         cout << "mode changed to nominal" << endl;
+        lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
     }
 }

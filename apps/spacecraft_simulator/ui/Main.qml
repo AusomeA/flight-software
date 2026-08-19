@@ -7,16 +7,6 @@ import SpacecraftSimulator
 ApplicationWindow {
     id: root
 
-    /* Timer {
-        interval: 100
-        running: true
-        repeat: false
-        onTriggered: {
-            root.x = (Screen.width - width) / 2;
-            root.y = (Screen.height - height) / 2;
-        }
-    } */
-
     Spacecraft {
         id: simulator
         Component.onCompleted: Start()
