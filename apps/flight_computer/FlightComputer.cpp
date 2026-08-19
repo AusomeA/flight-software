@@ -66,3 +66,36 @@ void FlightComputer::ModeCheck()
              << "Battery below 35% and more than 1/3 of the eclipse remaining" << endl;
     }
 }
+
+
+
+
+
+/////////////////////////////////// Testing Functions /////////////////////////////////////////////////
+void FlightComputer::ModeTestUp()
+{
+    if (mode_ == SharedTypes::Mode::nominal)
+    {
+        mode_ = SharedTypes::Mode::degraded;
+        cout << "mode changed to degraded" << endl;
+    }
+    else if (mode_ == SharedTypes::Mode::degraded)
+    {
+        mode_ = SharedTypes::Mode::safe;
+        cout << "mode changed to safe" << endl;
+    }
+}
+
+void FlightComputer::ModeTestDown()
+{
+    if (mode_ == SharedTypes::Mode::safe)
+    {
+        mode_ = SharedTypes::Mode::degraded;
+        cout << "mode changed to degraded" << endl;
+    }
+    else if (mode_ == SharedTypes::Mode::degraded)
+    {
+        mode_ = SharedTypes::Mode::nominal;
+        cout << "mode changed to nominal" << endl;
+    }
+}

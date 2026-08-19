@@ -255,15 +255,15 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
 {
     SharedTypes::Telemetry telemetry;
     telemetry.missionElapsedTimeSeconds = missionElapsedTimeSeconds_;
-    telemetry.batteryPercent            = BatteryCalculation();
-    telemetry.temperatureCelsius        = temperatureCelsius_;
-    telemetry.isInSunlight              = isInSunlight_;
-    telemetry.secondsUntilSunrise       = isInSunlight_ ? 0.f : eclipsePeriod - TimeIntoOrbit();
-    telemetry.temperatureSensorHealthy  = temperatureSensorHealthy_;
-    telemetry.powerSensorHealthy        = powerSensorHealthy_;
-    telemetry.attitudeSensorHealthy     = attitudeSensorHealthy_;
-    telemetry.communicationsAvailable   = communicationsAvailable_;
-    telemetry.commsTransmitting         = commsTransmitting_;
+    telemetry.batteryPercent = BatteryCalculation();
+    telemetry.temperatureCelsius = temperatureCelsius_;
+    telemetry.isInSunlight = isInSunlight_;
+    telemetry.secondsUntilSunrise = isInSunlight_ ? 0.f : eclipsePeriod - TimeIntoOrbit();
+    telemetry.temperatureSensorHealthy = temperatureSensorHealthy_;
+    telemetry.powerSensorHealthy = powerSensorHealthy_;
+    telemetry.attitudeSensorHealthy = attitudeSensorHealthy_;
+    telemetry.communicationsAvailable = communicationsAvailable_;
+    telemetry.commsTransmitting = commsTransmitting_;
     return telemetry;
 }
 
@@ -451,34 +451,16 @@ void SpacecraftSimulator::UpdateReadouts()
 
 void SpacecraftSimulator::ModeTestUp()
 {
-    if (mode_ == SharedTypes::Mode::nominal)
-    {
-        mode_ = SharedTypes::Mode::degraded;
-        cout << "mode changed to degraded" << endl;
-        UpdateReadouts();
-    }
-    else if (mode_ == SharedTypes::Mode::degraded)
-    {
-        mode_ = SharedTypes::Mode::safe;
-        cout << "mode changed to safe" << endl;
-        UpdateReadouts();
-    }
+    flightComputer_.ModeTestUp();
+    mode_ = flightComputer_.GetMode();
+    UpdateReadouts();
 }
 
 void SpacecraftSimulator::ModeTestDown()
 {
-    if (mode_ == SharedTypes::Mode::safe)
-    {
-        mode_ = SharedTypes::Mode::degraded;
-        cout << "mode changed to degraded" << endl;
-        UpdateReadouts();
-    }
-    else if (mode_ == SharedTypes::Mode::degraded)
-    {
-        mode_ = SharedTypes::Mode::nominal;
-        cout << "mode changed to nominal" << endl;
-        UpdateReadouts();
-    }
+    flightComputer_.ModeTestDown();
+    mode_ = flightComputer_.GetMode();
+    UpdateReadouts();
 }
 
 void SpacecraftSimulator::BatteryTestUp()

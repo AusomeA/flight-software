@@ -17,10 +17,15 @@ private:
 
     double lastGroundContactSeconds_;
 
-    static constexpr float maxSecondsWithoutGroundContact = 10800;  // max amount of time without contact before we go into safe mode
+    static constexpr float maxSecondsWithoutGroundContact = 10800; // max amount of time without contact before we go into safe mode
 
     static constexpr float eclipseDurationSeconds = 2400.f;
-    static constexpr float minSecondsUntilSunrise = eclipseDurationSeconds / 3.f;    // no need to go to safe mode on low battery if sun is about to rise
+    static constexpr float minSecondsUntilSunrise = eclipseDurationSeconds / 3.f; // no need to go to safe mode on low battery if sun is about to rise
 
     void ModeCheck();
+
+    ///////// Testing Functions ///////////
+public:
+    void ModeTestUp();
+    void ModeTestDown();
 };
