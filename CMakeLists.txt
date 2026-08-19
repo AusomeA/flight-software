@@ -21,11 +21,11 @@ qt_add_executable(
     apps/spacecraft_simulator/main.cpp
     apps/spacecraft_simulator/SpacecraftSimulator.h
     apps/spacecraft_simulator/SpacecraftSimulator.cpp
-    apps/spacecraft_simulator/ReadoutsModel.h
-    apps/spacecraft_simulator/ReadoutsModel.cpp
     apps/flight_computer/FlightComputer.h
     apps/flight_computer/FlightComputer.cpp
     libs/core/SharedTypes.h
+    libs/ui/ReadoutsModel.h
+    libs/ui/ReadoutsModel.cpp
 )
 
 
@@ -58,6 +58,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/spacecraft_simulator
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
 )
 
 ################## flight computer ####################
@@ -67,6 +68,8 @@ qt_add_executable(
     apps/flight_computer/FlightComputer.h
     apps/flight_computer/FlightComputer.cpp
     libs/core/SharedTypes.h
+    libs/ui/ReadoutsModel.h
+    libs/ui/ReadoutsModel.cpp
 )
 
 qt_add_qml_module(
@@ -97,4 +100,5 @@ target_include_directories(
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
 )
