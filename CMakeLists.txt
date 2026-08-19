@@ -67,6 +67,8 @@ qt_add_executable(
     apps/flight_computer/main.cpp
     apps/flight_computer/FlightComputer.h
     apps/flight_computer/FlightComputer.cpp
+    apps/flight_computer/FlightComputerUI.h
+    apps/flight_computer/FlightComputerUI.cpp
     libs/core/SharedTypes.h
     libs/ui/ReadoutsModel.h
     libs/ui/ReadoutsModel.cpp
