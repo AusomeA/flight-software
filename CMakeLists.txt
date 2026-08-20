@@ -11,6 +11,7 @@ find_package(
     REQUIRED COMPONENTS
     Quick
     Qml
+    Network
 )
 
 qt_standard_project_setup(REQUIRES 6.5)
@@ -46,6 +47,7 @@ target_link_libraries(
     PRIVATE
     Qt6::Quick
     Qt6::Qml
+    Qt6::Network
 )
 
 target_compile_features(
@@ -76,6 +78,8 @@ qt_add_executable(
     libs/ui/ReadoutsModel.cpp
     libs/ui/ReadoutFormatting.h
     libs/core/Helpers.h
+    libs/networking/UdpReceiver.h
+    libs/networking/UdpReceiver.cpp
 )
 
 qt_add_qml_module(
@@ -93,6 +97,7 @@ target_link_libraries(
     PRIVATE
     Qt6::Quick
     Qt6::Qml
+    Qt6::Network
 )
 
 target_compile_features(
@@ -107,4 +112,5 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/networking
 )

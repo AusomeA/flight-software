@@ -1,11 +1,14 @@
 #pragma once
 #include <QObject>
 #include <QQmlEngine>
+#include <QUdpSocket>
 
 namespace SharedTypes
 {
     Q_NAMESPACE
     QML_ELEMENT
+
+    inline constexpr quint16 telemetryPort = 45000;
 
     enum class Mode
     {

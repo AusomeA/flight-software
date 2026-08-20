@@ -3,6 +3,7 @@
 #include <QQmlEngine>
 #include <QTimer>
 #include <QString>
+#include <QUdpSocket>
 #include "SharedTypes.h"
 #include "ReadoutsModel.h"
 #include "FlightComputer.h" ///////// just for testing, remove later /////////////////
@@ -107,6 +108,9 @@ private:
 
     bool chaosEnabled_;
     static constexpr float meanSecondsBetweenFaults = 10800.f; // the mean seconds before a fault happens in chaos mode (10800 = 2 x 90 min orbits)
+
+    QUdpSocket telemetrySocket_;
+    QTimer telemetrySendTimer_;
     
     ReadoutsModel readoutsModel_;
     FlightComputer flightComputer_;
@@ -133,6 +137,10 @@ private:
     // static constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
     // static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
     // static constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is still just a warning (maximum)
+
+    // Networking Variables
+    //static constexpr quint16 telemetryPort = 45000;
+    static constexpr int telemetrySendIntervalMilliseconds = 200; // 5Hz, subject to change
     
     // Time Scale Variables
     static constexpr float minTimeScale = .5f;
@@ -170,4 +178,6 @@ private:
 
     void PopulateReadouts();
     void UpdateReadouts();
+
+    void SendTelemetry();
 };

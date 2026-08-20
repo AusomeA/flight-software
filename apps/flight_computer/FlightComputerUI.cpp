@@ -3,17 +3,17 @@
 #include "Helpers.h"
 
 FlightComputerUI::FlightComputerUI(QObject *parent)
-    : QObject(parent)
+    : QObject(parent),
+    receiver_(SharedTypes::telemetryPort)
 {
     PopulateRows();
+    connect(&receiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerUI::HandleTelemetry);
 }
 
 void FlightComputerUI::PopulateRows()
 {
     readoutsModel_.SetRows({
-        {"Time Scale", "", 0},
         {"Mode", "", 0},
-        {"Running", "", 0},
         {"MET", "", 0},
         {"Battery", "", 0},
         {"Solar Generation", "", 0},
@@ -28,7 +28,6 @@ void FlightComputerUI::PopulateRows()
         {"Power Sensor OK", "", 0},
         {"Attitude Sensor OK", "", 0},
         {"Payload Enabled", "", 0},
-        {"Chaos Enabled", "", 0}
     });
 }
 
@@ -53,4 +52,9 @@ void FlightComputerUI::UpdateRows(){
     readoutsModel_.UpdateRow(powerSensorRow, telemetry.powerSensorHealthy ? "Yes" : "No", static_cast<int>(telemetry.powerSensorHealthy ? SharedTypes::Status::good : SharedTypes::Status::critical));
     readoutsModel_.UpdateRow(attitudeSensorRow, telemetry.attitudeSensorHealthy ? "Yes" : "No", static_cast<int>(telemetry.attitudeSensorHealthy ? SharedTypes::Status::good : SharedTypes::Status::critical));
     readoutsModel_.UpdateRow(payloadRow, telemetry.payloadEnabled ? "Yes" : "No", static_cast<int>(telemetry.payloadEnabled ? SharedTypes::Status::good : SharedTypes::Status::none));
+}
+
+void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
+{
+    qDebug() << "Received:" << payload;
 }

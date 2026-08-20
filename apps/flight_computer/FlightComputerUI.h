@@ -4,12 +4,11 @@
 #include <QQmlEngine>
 #include "FlightComputer.h"
 #include "ReadoutsModel.h"
+#include "UdpReceiver.h"
 
 enum FCReadoutRowIndex
 {
-    timeScaleRow,
     modeRow,
-    runningRow,
     METRow,
     batteryRow,
     solarGenerationRow,
@@ -24,7 +23,6 @@ enum FCReadoutRowIndex
     powerSensorRow,
     attitudeSensorRow,
     payloadRow,
-    chaosRow,
     readoutRowCount
 };
 
@@ -42,6 +40,10 @@ Q_OBJECT
     FlightComputer flightComputer_;
     ReadoutsModel readoutsModel_;
 
+    UdpReceiver receiver_;
+
+    void HandleTelemetry(const QByteArray &payload);
+    
     void PopulateRows();
     void UpdateRows();
 };

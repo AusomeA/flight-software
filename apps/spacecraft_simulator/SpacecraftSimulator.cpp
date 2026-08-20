@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include <QRandomGenerator>
+#include <QHostAddress>
 
 using namespace std;
 
@@ -33,6 +34,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       chaosEnabled_(false)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
+    connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
+    telemetrySendTimer_.start(telemetrySendIntervalMilliseconds);
 }
 
 QString SpacecraftSimulator::StateText() const
@@ -446,6 +449,11 @@ void SpacecraftSimulator::UpdateReadouts()
     readoutsModel_.UpdateRow(attitudeSensorRow, attitudeSensorHealthy_ ? "Yes" : "No", static_cast<int>(attitudeSensorHealthy_ ? SharedTypes::Status::good : SharedTypes::Status::critical));
     readoutsModel_.UpdateRow(payloadRow, payloadEnabled_ ? "Yes" : "No", static_cast<int>(payloadEnabled_ ? SharedTypes::Status::good : SharedTypes::Status::none));
     readoutsModel_.UpdateRow(chaosRow, chaosEnabled_ ? "Yes" : "No", static_cast<int>(SharedTypes::Status::none));
+}
+
+void SpacecraftSimulator::SendTelemetry()
+{
+    telemetrySocket_.writeDatagram("Hello world", QHostAddress::LocalHost, SharedTypes::telemetryPort); // local host changes when we move to pi's
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
