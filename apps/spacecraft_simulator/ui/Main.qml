@@ -26,7 +26,12 @@ ApplicationWindow {
     }
 
     visible: true
-    visibility: Window.FullScreen
+    visibility: Window.Windowed
+    //width: Screen.width / 2
+    //height: Screen.desktopAvailableHeight
+
+    //x: 0
+    //y: 0
 
     title: "Spacecraft Simulator"
 
@@ -103,75 +108,75 @@ ApplicationWindow {
     //    anchors.fill: parent
     //    anchors.margins: 20
 
-        Grid {
-            id: readoutGrid
-            //width: readoutsScrollView.availableWidth
-            anchors.fill: parent
-            anchors.margins: 10
-            columns: 2
-            rowSpacing: 0
-            columnSpacing: 10
+    Grid {
+        id: readoutGrid
+        //width: readoutsScrollView.availableWidth
+        anchors.fill: parent
+        anchors.margins: 10
+        columns: 2
+        rowSpacing: 0
+        columnSpacing: 10
 
-            Repeater {
-                id: readoutRepeater
-                model: simulator.readoutsModel
+        Repeater {
+            id: readoutRepeater
+            model: simulator.readoutsModel
 
-                delegate: RowLayout {
-                    id: readoutRow
-                    width: (readoutGrid.width - readoutGrid.columnSpacing) / readoutGrid.columns
-                    spacing: 0
-                    required property string label
-                    required property string value
-                    required property int status
+            delegate: RowLayout {
+                id: readoutRow
+                width: (readoutGrid.width - readoutGrid.columnSpacing) / readoutGrid.columns
+                spacing: 0
+                required property string label
+                required property string value
+                required property int status
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: rowHeight
-                        color: "black"
-                        border.color: "white"
-                        border.width: 1
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: rowHeight
+                    color: "black"
+                    border.color: "white"
+                    border.width: 1
 
-                        Label {
-                            anchors.fill: parent
-                            anchors.margins: cellPadding
-                            verticalAlignment: Label.AlignVCenter
-                            horizontalAlignment: Label.AlignHCenter
-                            elide: Text.ElideRight
-                            fontSizeMode: Text.Fit
-                            minimumPixelSize: 8
+                    Label {
+                        anchors.fill: parent
+                        anchors.margins: cellPadding
+                        verticalAlignment: Label.AlignVCenter
+                        horizontalAlignment: Label.AlignHCenter
+                        elide: Text.ElideRight
+                        fontSizeMode: Text.Fit
+                        minimumPixelSize: 8
 
-                            text: readoutRow.label
+                        text: readoutRow.label
 
-                            font.pixelSize: baseFontSize
-                            color: "white"
-                        }
+                        font.pixelSize: baseFontSize
+                        color: "white"
                     }
+                }
 
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: rowHeight
-                        color: "black"
-                        border.color: "white"
-                        border.width: 1
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: rowHeight
+                    color: "black"
+                    border.color: "white"
+                    border.width: 1
 
-                        Label {
+                    Label {
 
-                            anchors.fill: parent
-                            anchors.margins: cellPadding
-                            verticalAlignment: Label.AlignVCenter
-                            horizontalAlignment: Label.AlignHCenter
-                            elide: Text.ElideRight
-                            fontSizeMode: Text.Fit
-                            minimumPixelSize: 8
+                        anchors.fill: parent
+                        anchors.margins: cellPadding
+                        verticalAlignment: Label.AlignVCenter
+                        horizontalAlignment: Label.AlignHCenter
+                        elide: Text.ElideRight
+                        fontSizeMode: Text.Fit
+                        minimumPixelSize: 8
 
-                            text: readoutRow.value
+                        text: readoutRow.value
 
-                            font.pixelSize: baseFontSize
-                            color: statusColor(readoutRow.status)
-                        }
+                        font.pixelSize: baseFontSize
+                        color: statusColor(readoutRow.status)
                     }
                 }
             }
         }
+    }
     //}
 }

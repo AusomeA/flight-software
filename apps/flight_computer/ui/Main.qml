@@ -26,7 +26,12 @@ ApplicationWindow {
     }
 
     visible: true
-    visibility: Window.FullScreen
+    visibility: Window.Windowed
+    //width: Screen.width / 2
+    //height: Screen.height - 20
+
+    //x: 0
+    //y: 0
 
     title: "Flight Computer"
 
