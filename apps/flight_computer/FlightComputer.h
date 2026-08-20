@@ -11,6 +11,8 @@ public:
 
     SharedTypes::Mode GetMode() const { return mode_; }
 
+    const SharedTypes::Telemetry &GetTelemetry() const { return telemetry_; }
+
 private:
     SharedTypes::Mode mode_;
     SharedTypes::Telemetry telemetry_;

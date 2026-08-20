@@ -26,6 +26,8 @@ qt_add_executable(
     libs/core/SharedTypes.h
     libs/ui/ReadoutsModel.h
     libs/ui/ReadoutsModel.cpp
+    libs/ui/ReadoutFormatting.h
+    libs/core/Helpers.h
 )
 
 
@@ -72,6 +74,8 @@ qt_add_executable(
     libs/core/SharedTypes.h
     libs/ui/ReadoutsModel.h
     libs/ui/ReadoutsModel.cpp
+    libs/ui/ReadoutFormatting.h
+    libs/core/Helpers.h
 )
 
 qt_add_qml_module(

@@ -57,10 +57,10 @@ public:
 
     Q_INVOKABLE void ToggleChaosMode();
 
-    SharedTypes::Status GetBatteryStatus() const;
-    SharedTypes::Status GetSolarGenerationStatus() const;
-    SharedTypes::Status GetPowerConsumptionStatus() const;
-    SharedTypes::Status GetTemperatureStatus() const;
+    // SharedTypes::Status GetBatteryStatus() const;
+    // SharedTypes::Status GetSolarGenerationStatus() const;
+    // SharedTypes::Status GetPowerConsumptionStatus() const;
+    // SharedTypes::Status GetTemperatureStatus() const;
 
     SharedTypes::Mode GetMode() const { return mode_; }
 
@@ -129,10 +129,10 @@ private:
     static constexpr float thermalTimeConstantSeconds = 600.f;  // how fast it responds
     static constexpr float celsiusPerWatt = 0.8f;               // internal heat from electronics (including heater)
     static constexpr float louverCoolingCelsius = 10.f;         // how much the radiator cools
-    static constexpr float minTemperatureGoodCelsius = 10.f;    // what temp is still good (minimum)
-    static constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
-    static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
-    static constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is still just a warning (maximum)
+    // static constexpr float minTemperatureGoodCelsius = 10.f;    // what temp is still good (minimum)
+    // static constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
+    // static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
+    // static constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is still just a warning (maximum)
     
     // Time Scale Variables
     static constexpr float minTimeScale = .5f;
@@ -150,7 +150,8 @@ private:
     static constexpr float beaconTransmitSeconds = 15.f; // transmit for this many seconds every beacon period
     
     // Functions
-    QString MissionElapsedTimeText() const;
+
+    //QString MissionElapsedTimeText() const;
 
     QTimer updateTimer_;
 
