@@ -23,7 +23,8 @@ namespace SharedTypes
         good,
         warning,
         critical,
-        none
+        none,
+        stale
     };
     Q_ENUM_NS(Status)
 

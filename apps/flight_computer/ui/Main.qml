@@ -9,17 +9,18 @@ ApplicationWindow {
 
     FlightComputerUI {
         id: flightComputer
-        //Component.onCompleted: Start()
     }
 
     function statusColor(status) {
         switch (status) {
         case SharedTypes.Status.good:
-            return "green"; // good
+            return "green"; 
         case SharedTypes.Status.warning:
-            return "yellow"; // warning
+            return "yellow"; 
         case SharedTypes.Status.critical:
-            return "red"; // critical
+            return "red"; 
+        case SharedTypes.Status.stale:
+            return "steelblue"; 
         default:
             return "white"; // none / unknown
         }

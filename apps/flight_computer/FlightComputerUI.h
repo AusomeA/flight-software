@@ -2,12 +2,15 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <QTimer>
+#include <QElapsedTimer>
 #include "FlightComputer.h"
 #include "ReadoutsModel.h"
 #include "UdpReceiver.h"
 
 enum FCReadoutRowIndex
 {
+    linkRow,
     modeRow,
     METRow,
     batteryRow,
@@ -41,9 +44,15 @@ Q_OBJECT
     ReadoutsModel readoutsModel_;
 
     UdpReceiver receiver_;
+    QTimer linkCheckTimer_;
+    QElapsedTimer timeSinceLastPacket_;
+
+    static constexpr int linkLostMilliseconds = 3000;
+    static constexpr int linkCheckIntervalMilliseconds = 200;
 
     void HandleTelemetry(const QByteArray &payload);
+    void UpdateLinkRow();                                           // Have to update seperate in case packet does not arrive
     
     void PopulateRows();
-    void UpdateRows();
+    void UpdateRows(bool stale = false);
 };
