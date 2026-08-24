@@ -1,6 +1,7 @@
 #include "FlightComputerUI.h"
 #include "ReadoutFormatting.h"
 #include "Helpers.h"
+#include "TelemetryJson.h"
 
 FlightComputerUI::FlightComputerUI(QObject *parent)
     : QObject(parent),
@@ -56,5 +57,7 @@ void FlightComputerUI::UpdateRows(){
 
 void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
 {
-    qDebug() << "Received:" << payload;
+    SharedTypes::Telemetry telemetry = TelemetryFromJson(payload);
+    flightComputer_.Update(telemetry);
+    UpdateRows();
 }

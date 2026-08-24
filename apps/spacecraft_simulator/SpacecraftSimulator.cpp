@@ -1,6 +1,7 @@
 #include "SpacecraftSimulator.h"
 #include "ReadoutFormatting.h"
 #include "Helpers.h"
+#include "TelemetryJson.h"
 #include <iostream>
 #include <QTime>
 #include <cmath>
@@ -261,14 +262,19 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
     SharedTypes::Telemetry telemetry;
     telemetry.missionElapsedTimeSeconds = missionElapsedTimeSeconds_;
     telemetry.batteryPercent = BatteryCalculation();
+    telemetry.solarGenerationWatts = solarGenerationWatts_;
+    telemetry.powerConsumptionWatts = powerConsumptionWatts_;
     telemetry.temperatureCelsius = temperatureCelsius_;
+    telemetry.heaterEnabled = heaterEnabled_;
+    telemetry.radiatorLouversOpen = radiatorLouversOpen_;
     telemetry.isInSunlight = isInSunlight_;
-    telemetry.secondsUntilSunrise = isInSunlight_ ? 0.f : eclipsePeriod - TimeIntoOrbit();
     telemetry.temperatureSensorHealthy = temperatureSensorHealthy_;
     telemetry.powerSensorHealthy = powerSensorHealthy_;
     telemetry.attitudeSensorHealthy = attitudeSensorHealthy_;
     telemetry.communicationsAvailable = communicationsAvailable_;
     telemetry.commsTransmitting = commsTransmitting_;
+    telemetry.payloadEnabled = payloadEnabled_;
+    telemetry.secondsUntilSunrise = isInSunlight_ ? 0.f : eclipsePeriod - TimeIntoOrbit();
     return telemetry;
 }
 
@@ -453,7 +459,8 @@ void SpacecraftSimulator::UpdateReadouts()
 
 void SpacecraftSimulator::SendTelemetry()
 {
-    telemetrySocket_.writeDatagram("Hello world", QHostAddress::LocalHost, SharedTypes::telemetryPort); // local host changes when we move to pi's
+    telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()), 
+                                    QHostAddress::LocalHost, SharedTypes::telemetryPort); // local host changes when we move to pi's
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

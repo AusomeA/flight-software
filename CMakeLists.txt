@@ -29,6 +29,7 @@ qt_add_executable(
     libs/ui/ReadoutsModel.cpp
     libs/ui/ReadoutFormatting.h
     libs/core/Helpers.h
+    libs/protocol/TelemetryJson.h
 )
 
 
@@ -63,6 +64,7 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/protocol
 )
 
 ################## flight computer ####################
@@ -80,6 +82,7 @@ qt_add_executable(
     libs/core/Helpers.h
     libs/networking/UdpReceiver.h
     libs/networking/UdpReceiver.cpp
+    libs/protocol/TelemetryJson.h
 )
 
 qt_add_qml_module(
@@ -112,5 +115,6 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/networking
 )
