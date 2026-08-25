@@ -18,7 +18,11 @@ FlightComputerUI::FlightComputerUI(QObject *parent)
 
     const QStringList arguments = QCoreApplication::arguments();
     if(arguments.size() > 1)
+    {
         simulatorAddress_ = QHostAddress(arguments[1]);
+        if(simulatorAddress_.isNull())
+            qFatal("Invalid address argument: %s", qPrintable(arguments[1]));
+    }
 }
 
 void FlightComputerUI::PopulateRows()
@@ -72,9 +76,14 @@ void FlightComputerUI::UpdateRows(bool stale)
 
 void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
 {
+    std::optional<SharedTypes::Telemetry> telemetry = TelemetryFromJson(payload);
+    if(!telemetry)
+    {
+        qWarning() << "Dropped malformed telemetry packet";
+        return;
+    }
     timeSinceLastPacket_.restart();
-    SharedTypes::Telemetry telemetry = TelemetryFromJson(payload);
-    SharedTypes::Commands commands = flightComputer_.Update(telemetry);
+    SharedTypes::Commands commands = flightComputer_.Update(*telemetry);
     commandSocket_.writeDatagram(CommandsToJson(commands), simulatorAddress_, SharedTypes::commandPort);         // Local Host will change later
     UpdateRows();
 }

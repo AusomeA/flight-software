@@ -44,7 +44,11 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
 
     const QStringList arguments = QCoreApplication::arguments();
     if(arguments.size() > 1)
+    {
         flightComputerAddress_ = QHostAddress(arguments[1]);
+        if(flightComputerAddress_.isNull())
+            qFatal("Invalid address argument: %s", qPrintable(arguments[1]));
+    }
 }
 
 QString SpacecraftSimulator::StateText() const
@@ -406,7 +410,13 @@ void SpacecraftSimulator::SendTelemetry()
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
 {
-    mode_ = CommandsFromJson(payload).mode;
+    std::optional<SharedTypes::Commands> commands = CommandsFromJson(payload);
+    if(!commands)
+    {
+        qWarning() << "Dropped malformed command packet";
+        return;
+    }
+    mode_ = commands->mode;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
