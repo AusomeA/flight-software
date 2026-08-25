@@ -22,14 +22,14 @@ qt_add_executable(
     apps/spacecraft_simulator/main.cpp
     apps/spacecraft_simulator/SpacecraftSimulator.h
     apps/spacecraft_simulator/SpacecraftSimulator.cpp
-    apps/flight_computer/FlightComputer.h
-    apps/flight_computer/FlightComputer.cpp
     libs/core/SharedTypes.h
     libs/ui/ReadoutsModel.h
     libs/ui/ReadoutsModel.cpp
     libs/ui/ReadoutFormatting.h
     libs/core/Helpers.h
     libs/protocol/TelemetryJson.h
+    libs/networking/UdpReceiver.h
+    libs/networking/UdpReceiver.cpp
 )
 
 
@@ -61,10 +61,10 @@ target_include_directories(
     spacecraft_simulator
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/spacecraft_simulator
-    ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/protocol
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/networking
 )
 
 ################## flight computer ####################

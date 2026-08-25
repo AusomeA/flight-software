@@ -48,3 +48,18 @@ telemetry.secondsUntilSunrise       = json["secondsUntilSunrise"].toDouble();
 
 return telemetry;
 }
+
+inline QByteArray CommandsToJson(const SharedTypes::Commands &commands)
+{
+    QJsonObject json;
+    json["mode"] = static_cast<int>(commands.mode);
+    return QJsonDocument(json).toJson(QJsonDocument::Compact);
+}
+
+inline SharedTypes::Commands CommandsFromJson(const QByteArray &payload)
+{
+    SharedTypes::Commands commands;
+    QJsonObject json = QJsonDocument::fromJson(payload).object();
+    commands.mode = static_cast<SharedTypes::Mode>(json["mode"].toInt());
+    return commands;
+}

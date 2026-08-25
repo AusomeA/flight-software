@@ -59,16 +59,6 @@ ApplicationWindow {
     }
 
     Shortcut {
-        sequence: "Up"
-        onActivated: simulator.ModeTestUp()
-    }
-
-    Shortcut {
-        sequence: "Down"
-        onActivated: simulator.ModeTestDown()
-    }
-
-    Shortcut {
         sequence: "="
         onActivated: simulator.BatteryTestUp()
     }

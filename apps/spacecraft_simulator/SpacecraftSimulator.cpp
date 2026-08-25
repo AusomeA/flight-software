@@ -13,6 +13,7 @@ using namespace std;
 
 SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     : QObject(parent),
+      commandReceiver_(SharedTypes::commandPort),
       mode_(SharedTypes::Mode::nominal),
       isRunning_(false),
       missionElapsedTimeSeconds_(0.0),
@@ -36,6 +37,7 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
+    connect(&commandReceiver_, &UdpReceiver::DatagramReceived, this, &SpacecraftSimulator::HandleCommands);
     telemetrySendTimer_.start(telemetrySendIntervalMilliseconds);
 }
 
@@ -119,10 +121,6 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     if (chaosEnabled_ && QRandomGenerator::global()->generateDouble() < deltaTimeSeconds / meanSecondsBetweenFaults)
         FailRandomSensor(QRandomGenerator::global()->bounded(3));
 
-    //////////////////// flight computer (for testing, delete later)//////////////////////
-    SharedTypes::Commands commands = flightComputer_.Update(BuildTelemetry());
-    mode_ = commands.mode;
-
     // power checks
     PayloadCheck();
     CommsCheck();
@@ -179,69 +177,6 @@ void SpacecraftSimulator::DecreaseTimeScale()
         UpdateReadouts();
     }
 }
-
-// SharedTypes::Status SpacecraftSimulator::GetBatteryStatus() const
-// {
-//     float batteryPercentage = BatteryCalculation();
-
-//     if (batteryPercentage > 50.f)
-//         return SharedTypes::Status::good;
-//     else if (batteryPercentage > 20.f)
-//         return SharedTypes::Status::warning;
-//     else
-//         return SharedTypes::Status::critical;
-// }
-
-// SharedTypes::Status SpacecraftSimulator::GetSolarGenerationStatus() const
-// {
-//     if (!isInSunlight_)
-//         return SharedTypes::Status::none;
-
-//     if (solarGenerationWatts_ > 30.f)
-//         return SharedTypes::Status::good;
-//     else if (solarGenerationWatts_ > 10.f)
-//         return SharedTypes::Status::warning;
-//     else
-//         return SharedTypes::Status::critical;
-// }
-
-// SharedTypes::Status SpacecraftSimulator::GetPowerConsumptionStatus() const
-// {
-//     if (powerConsumptionWatts_ < 33.75f) // if ran through entire eclipse, would break even on power consumption
-//         return SharedTypes::Status::good;
-//     else if (powerConsumptionWatts_ < 46.f) // 45 watts is everything running at once. Should not go above 45 watts and should only use 45 watts sparingly.
-//         return SharedTypes::Status::warning;
-//     else
-//         return SharedTypes::Status::critical;
-// }
-
-// SharedTypes::Status SpacecraftSimulator::GetTemperatureStatus() const
-// {
-//     if (temperatureCelsius_ <= maxTemperatureGoodCelsius && temperatureCelsius_ >= minTemperatureGoodCelsius)
-//         return SharedTypes::Status::good;
-//     else if (temperatureCelsius_ <= maxTemperatureWarningCelsius && temperatureCelsius_ >= minTemperatureWarningCelsius)
-//         return SharedTypes::Status::warning;
-//     else
-//         return SharedTypes::Status::critical;
-// }
-
-// QString SpacecraftSimulator::MissionElapsedTimeText() const
-// {
-//     QString METText = QString("T+ ");
-
-//     int totalSeconds = static_cast<int>(missionElapsedTimeSeconds_); // will wrap around at ~ 68 years (~2 billion seconds)
-
-//     int days = totalSeconds / 86400;
-//     int hours = (totalSeconds % 86400) / 3600;
-//     int minutes = (totalSeconds % 3600) / 60;
-//     int seconds = totalSeconds % 60;
-
-//     return METText + QString("%1:%2:%3:%4")
-//                          .arg(days, 3, 10, QChar('0'))
-//                          .arg(hours, 2, 10, QChar('0'))
-//                          .arg(minutes, 2, 10, QChar('0'))
-//                          .arg(seconds, 2, 10, QChar('0'));
-// }
 
 void SpacecraftSimulator::AdvanceOneTick()
 {
@@ -463,22 +398,13 @@ void SpacecraftSimulator::SendTelemetry()
                                     QHostAddress::LocalHost, SharedTypes::telemetryPort); // local host changes when we move to pi's
 }
 
+void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
+{
+    mode_ = CommandsFromJson(payload).mode;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////// Testing Functions ////////////////////////////////////////////////////
-
-void SpacecraftSimulator::ModeTestUp()
-{
-    flightComputer_.ModeTestUp();
-    mode_ = flightComputer_.GetMode();
-    UpdateReadouts();
-}
-
-void SpacecraftSimulator::ModeTestDown()
-{
-    flightComputer_.ModeTestDown();
-    mode_ = flightComputer_.GetMode();
-    UpdateReadouts();
-}
 
 void SpacecraftSimulator::BatteryTestUp()
 {

@@ -68,7 +68,8 @@ void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
 {
     timeSinceLastPacket_.restart();
     SharedTypes::Telemetry telemetry = TelemetryFromJson(payload);
-    flightComputer_.Update(telemetry);
+    SharedTypes::Commands commands = flightComputer_.Update(telemetry);
+    commandSocket_.writeDatagram(CommandsToJson(commands), QHostAddress::LocalHost, SharedTypes::commandPort);         // Local Host will change later
     UpdateRows();
 }
 

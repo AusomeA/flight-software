@@ -6,7 +6,7 @@
 #include <QUdpSocket>
 #include "SharedTypes.h"
 #include "ReadoutsModel.h"
-#include "FlightComputer.h" ///////// just for testing, remove later /////////////////
+#include "UdpReceiver.h"
 
 enum ReadoutRowIndex
 {
@@ -58,18 +58,11 @@ public:
 
     Q_INVOKABLE void ToggleChaosMode();
 
-    // SharedTypes::Status GetBatteryStatus() const;
-    // SharedTypes::Status GetSolarGenerationStatus() const;
-    // SharedTypes::Status GetPowerConsumptionStatus() const;
-    // SharedTypes::Status GetTemperatureStatus() const;
-
     SharedTypes::Mode GetMode() const { return mode_; }
 
     QAbstractItemModel *ReadoutsModelPtr() { return &readoutsModel_; }
 
     /////// Testing Functions ////////////
-    Q_INVOKABLE void ModeTestUp();
-    Q_INVOKABLE void ModeTestDown();
     Q_INVOKABLE void BatteryTestUp();
     Q_INVOKABLE void BatteryTestDown();
     /////////////////////////////////////
@@ -110,10 +103,10 @@ private:
     static constexpr float meanSecondsBetweenFaults = 10800.f; // the mean seconds before a fault happens in chaos mode (10800 = 2 x 90 min orbits)
 
     QUdpSocket telemetrySocket_;
+    UdpReceiver commandReceiver_;
     QTimer telemetrySendTimer_;
     
     ReadoutsModel readoutsModel_;
-    FlightComputer flightComputer_;
     
     // Sunlight Variables
     static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
@@ -133,10 +126,6 @@ private:
     static constexpr float thermalTimeConstantSeconds = 600.f;  // how fast it responds
     static constexpr float celsiusPerWatt = 0.8f;               // internal heat from electronics (including heater)
     static constexpr float louverCoolingCelsius = 10.f;         // how much the radiator cools
-    // static constexpr float minTemperatureGoodCelsius = 10.f;    // what temp is still good (minimum)
-    // static constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
-    // static constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
-    // static constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is still just a warning (maximum)
 
     // Networking Variables
     //static constexpr quint16 telemetryPort = 45000;
@@ -159,8 +148,6 @@ private:
     
     // Functions
 
-    //QString MissionElapsedTimeText() const;
-
     QTimer updateTimer_;
 
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
@@ -180,4 +167,6 @@ private:
     void UpdateReadouts();
 
     void SendTelemetry();
+
+    void HandleCommands(const QByteArray &payload);
 };

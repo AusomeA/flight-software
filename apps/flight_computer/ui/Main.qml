@@ -58,16 +58,16 @@ ApplicationWindow {
     //    sequence: "Left"
     //    onActivated: simulator.DecreaseTimeScale()
     //}
-//
-    //Shortcut {
-    //    sequence: "Up"
-    //    onActivated: simulator.ModeTestUp()
-    //}
-//
-    //Shortcut {
-    //    sequence: "Down"
-    //    onActivated: simulator.ModeTestDown()
-    //}
+
+    Shortcut {
+        sequence: "Up"
+        onActivated: flightComputer.ModeTestUp()
+    }
+
+    Shortcut {
+        sequence: "Down"
+        onActivated: flightComputer.ModeTestDown()
+    }
 //
     //Shortcut {
     //    sequence: "="

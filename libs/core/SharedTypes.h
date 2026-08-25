@@ -8,7 +8,8 @@ namespace SharedTypes
     Q_NAMESPACE
     QML_ELEMENT
 
-    inline constexpr quint16 telemetryPort = 45000;
+    inline constexpr quint16 telemetryPort  = 45000;
+    inline constexpr quint16 commandPort    = 45001;
 
     enum class Mode
     {
