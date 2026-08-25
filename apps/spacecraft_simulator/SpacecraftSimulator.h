@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QString>
 #include <QUdpSocket>
+#include <QHostAddress>
 #include "SharedTypes.h"
 #include "ReadoutsModel.h"
 #include "UdpReceiver.h"
@@ -104,6 +105,8 @@ private:
 
     QUdpSocket telemetrySocket_;
     UdpReceiver commandReceiver_;
+    QHostAddress flightComputerAddress_;
+
     QTimer telemetrySendTimer_;
     
     ReadoutsModel readoutsModel_;

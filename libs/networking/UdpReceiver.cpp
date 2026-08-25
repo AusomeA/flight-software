@@ -5,7 +5,7 @@
 UdpReceiver::UdpReceiver(quint16 port, QObject *parent)
 : QObject(parent)
 {
-    if(!socket_.bind(QHostAddress::LocalHost, port))
+    if(!socket_.bind(QHostAddress::Any, port))
     {
         qWarning() << "Failed to bind UDP port" << port << ":" << socket_.errorString();
     }

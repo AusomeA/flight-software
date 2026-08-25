@@ -2,10 +2,12 @@
 #include "ReadoutFormatting.h"
 #include "Helpers.h"
 #include "TelemetryJson.h"
+#include <QCoreApplication>
 
 FlightComputerUI::FlightComputerUI(QObject *parent)
     : QObject(parent),
-      receiver_(SharedTypes::telemetryPort)
+      receiver_(SharedTypes::telemetryPort),
+      simulatorAddress_(QHostAddress::LocalHost)
 {
     PopulateRows();
     connect(&receiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerUI::HandleTelemetry);
@@ -13,6 +15,10 @@ FlightComputerUI::FlightComputerUI(QObject *parent)
     timeSinceLastPacket_.start();
     connect(&linkCheckTimer_, &QTimer::timeout, this, &FlightComputerUI::UpdateLinkRow);
     linkCheckTimer_.start(linkCheckIntervalMilliseconds);
+
+    const QStringList arguments = QCoreApplication::arguments();
+    if(arguments.size() > 1)
+        simulatorAddress_ = QHostAddress(arguments[1]);
 }
 
 void FlightComputerUI::PopulateRows()
@@ -69,7 +75,7 @@ void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
     timeSinceLastPacket_.restart();
     SharedTypes::Telemetry telemetry = TelemetryFromJson(payload);
     SharedTypes::Commands commands = flightComputer_.Update(telemetry);
-    commandSocket_.writeDatagram(CommandsToJson(commands), QHostAddress::LocalHost, SharedTypes::commandPort);         // Local Host will change later
+    commandSocket_.writeDatagram(CommandsToJson(commands), simulatorAddress_, SharedTypes::commandPort);         // Local Host will change later
     UpdateRows();
 }
 

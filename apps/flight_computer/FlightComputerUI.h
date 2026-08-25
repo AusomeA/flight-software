@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QUdpSocket>
+#include <QHostAddress>
 #include "FlightComputer.h"
 #include "ReadoutsModel.h"
 #include "UdpReceiver.h"
@@ -49,6 +50,8 @@ Q_OBJECT
 
     UdpReceiver receiver_;
     QUdpSocket commandSocket_;
+    QHostAddress simulatorAddress_;
+
     QTimer linkCheckTimer_;
     QElapsedTimer timeSinceLastPacket_;
 

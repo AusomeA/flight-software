@@ -8,12 +8,14 @@
 #include <algorithm>
 #include <QRandomGenerator>
 #include <QHostAddress>
+#include <QCoreApplication>
 
 using namespace std;
 
 SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     : QObject(parent),
       commandReceiver_(SharedTypes::commandPort),
+      flightComputerAddress_(QHostAddress::LocalHost),
       mode_(SharedTypes::Mode::nominal),
       isRunning_(false),
       missionElapsedTimeSeconds_(0.0),
@@ -39,6 +41,10 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
     connect(&commandReceiver_, &UdpReceiver::DatagramReceived, this, &SpacecraftSimulator::HandleCommands);
     telemetrySendTimer_.start(telemetrySendIntervalMilliseconds);
+
+    const QStringList arguments = QCoreApplication::arguments();
+    if(arguments.size() > 1)
+        flightComputerAddress_ = QHostAddress(arguments[1]);
 }
 
 QString SpacecraftSimulator::StateText() const
@@ -395,7 +401,7 @@ void SpacecraftSimulator::UpdateReadouts()
 void SpacecraftSimulator::SendTelemetry()
 {
     telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()), 
-                                    QHostAddress::LocalHost, SharedTypes::telemetryPort); // local host changes when we move to pi's
+                                    flightComputerAddress_, SharedTypes::telemetryPort); // local host changes when we move to pi's
 }
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
