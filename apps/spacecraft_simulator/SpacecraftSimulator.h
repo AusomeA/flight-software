@@ -111,10 +111,10 @@ private:
     
     ReadoutsModel readoutsModel_;
     
-    // Sunlight Variables
-    static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
-    static constexpr float sunlitSeconds = 3000.f;                             // 3000 seconds = 50 minutes
-    static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes (subject to change if other values change)
+    //// Sunlight Variables
+    //static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
+    //static constexpr float sunlitSeconds = 3000.f;                             // 3000 seconds = 50 minutes
+    //static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes (subject to change if other values change)
     
     // Power Consumption Variables
     static constexpr float basePowerConsumption = 5.f; // how much power is consumed, even in safe mode
@@ -138,9 +138,9 @@ private:
     static constexpr float minTimeScale = .5f;
     static constexpr float maxTimeScale = 64.f;
     
-    // Payload Variables
-    static constexpr float payloadStartTime = 900.f; // payload begins working start and end windows
-    static constexpr float payloadEndTime = 1500.f;
+    //// Payload Variables
+    //static constexpr float payloadStartTime = 900.f; // payload begins working start and end windows
+    //static constexpr float payloadEndTime = 1500.f;
     
     // Comms Variables
     static constexpr float commsStart = 1200.f; // comms available start and end windows
@@ -155,13 +155,13 @@ private:
 
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
 
-    float TimeIntoOrbit() const { return fmod(missionElapsedTimeSeconds_, orbitPeriodSeconds); }
+    float TimeIntoOrbit() const { return fmod(missionElapsedTimeSeconds_, SharedTypes::orbitPeriodSeconds); }
 
     void AdvanceOneTick();
 
     SharedTypes::Telemetry BuildTelemetry() const;
 
-    void PayloadCheck();
+    //void PayloadCheck();
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();

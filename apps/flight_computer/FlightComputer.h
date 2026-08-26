@@ -15,16 +15,20 @@ public:
 
 private:
     SharedTypes::Mode mode_;
+    bool payloadEnabled_;
     SharedTypes::Telemetry telemetry_;
 
     double lastGroundContactSeconds_;
 
     static constexpr float maxSecondsWithoutGroundContact = 10800; // max amount of time without contact before we go into safe mode
 
-    static constexpr float eclipseDurationSeconds = 2400.f;
-    static constexpr float minSecondsUntilSunrise = eclipseDurationSeconds / 3.f; // no need to go to safe mode on low battery if sun is about to rise
+    static constexpr float minSecondsUntilSunrise = SharedTypes::eclipseSeconds / 3.f; // no need to go to safe mode on low battery if sun is about to rise
+
+    static constexpr float minPayloadBatteryPercent = 30.f;
 
     void ModeCheck();
+    void PayloadCheck();
+    float TimeIntoOrbit() const;
 
     ///////// Testing Functions ///////////
 public:

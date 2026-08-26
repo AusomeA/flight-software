@@ -12,6 +12,10 @@ inline const QStringList requiredTelemetryKeys = {
     "commsTransmitting", "payloadEnabled", "secondsUntilSunrise"
 };
 
+inline const QStringList requiredCommandKeys = {
+    "mode", "payloadEnabled", "commsTransmitting", "heaterEnabled"
+};
+
 inline bool HasAllKeys(const QJsonObject &json, const QStringList &requiredKeys)
 {
     for (const QString &key : requiredKeys)
@@ -80,6 +84,9 @@ inline QByteArray CommandsToJson(const SharedTypes::Commands &commands)
 {
     QJsonObject json;
     json["mode"] = static_cast<int>(commands.mode);
+    json["payloadEnabled"] = commands.payloadEnabled;
+    json["commsTransmitting"] = commands.commsTransmitting;
+    json["heaterEnabled"] = commands.heaterEnabled;
     return QJsonDocument(json).toJson(QJsonDocument::Compact);
 }
 
@@ -91,11 +98,18 @@ inline std::optional<SharedTypes::Commands> CommandsFromJson(const QByteArray &p
         return std::nullopt;
 
     QJsonObject json = document.object();
+
+    if (!HasAllKeys(json, requiredCommandKeys))
+        return std::nullopt;
+
     const int modeNumber = json["mode"].toInt(-1);
     if(modeNumber < 0 || modeNumber > static_cast<int>(SharedTypes::Mode::safe))
         return std::nullopt;
 
     SharedTypes::Commands commands;
     commands.mode = static_cast<SharedTypes::Mode>(modeNumber);
+    commands.payloadEnabled = json["payloadEnabled"].toBool();
+    commands.commsTransmitting = json["commsTransmitting"].toBool();
+    commands.heaterEnabled = json["heaterEnabled"].toBool();
     return commands;
 }

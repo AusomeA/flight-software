@@ -11,6 +11,15 @@ namespace SharedTypes
     inline constexpr quint16 telemetryPort  = 45000;
     inline constexpr quint16 commandPort    = 45001;
 
+    // Orbit times
+    inline constexpr float orbitPeriodSeconds = 5400.f;
+    inline constexpr float sunlitSeconds = 3000.f;
+    inline constexpr float eclipseSeconds = orbitPeriodSeconds - sunlitSeconds;
+
+    // payload windows
+    inline constexpr float payloadStartTime = 900.f;
+    inline constexpr float payloadEndTime = 1500.f;
+
     enum class Mode
     {
         nominal,
@@ -51,5 +60,8 @@ namespace SharedTypes
     struct Commands
     {
         Mode mode = Mode::nominal;
+        bool payloadEnabled = false;
+        bool commsTransmitting = false;
+        bool heaterEnabled = false;
     };
 }

@@ -5,6 +5,7 @@ using namespace std;
 
 FlightComputer::FlightComputer()
     : mode_(SharedTypes::Mode::nominal),
+      payloadEnabled_(false),
       lastGroundContactSeconds_(0.0)
 {
 }
@@ -13,13 +14,15 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
 {
     telemetry_ = telemetry;
 
-    if(telemetry_.communicationsAvailable && telemetry_.commsTransmitting)
+    if (telemetry_.communicationsAvailable && telemetry_.commsTransmitting)
         lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
 
     ModeCheck();
+    PayloadCheck();
 
     SharedTypes::Commands commands;
     commands.mode = mode_;
+    commands.payloadEnabled = payloadEnabled_;
     return commands;
 }
 
@@ -66,6 +69,42 @@ void FlightComputer::ModeCheck()
              << "Battery below 35% and more than 1/3 of the eclipse remaining" << endl;
     }
 }
+
+float FlightComputer::TimeIntoOrbit() const
+{
+    return fmod(telemetry_.missionElapsedTimeSeconds, SharedTypes::orbitPeriodSeconds);
+}
+
+void FlightComputer::PayloadCheck()
+{
+    if (mode_ != SharedTypes::Mode::nominal)
+    {
+        if (payloadEnabled_)
+            payloadEnabled_ = false;
+
+        return;
+    }
+
+    if (!payloadEnabled_)
+    {
+        float timeInOrbit = TimeIntoOrbit();
+        if (timeInOrbit >= SharedTypes::payloadStartTime && timeInOrbit <= SharedTypes::payloadEndTime && telemetry_.batteryPercent > minPayloadBatteryPercent)
+        {
+            payloadEnabled_ = true;
+            cout << "Payload Enabled" << endl;
+        }
+    }
+    else
+    {
+        float timeInOrbit = TimeIntoOrbit();
+        if (timeInOrbit > SharedTypes::payloadEndTime || timeInOrbit < SharedTypes::payloadStartTime)
+        {
+            payloadEnabled_ = false;
+            cout << "Payload Disabled" << endl;
+        }
+    }
+}
+
 
 
 

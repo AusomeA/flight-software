@@ -125,14 +125,14 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     missionElapsedTimeSeconds_ += deltaTimeSeconds;
 
     // sun calculation
-    isInSunlight_ = TimeIntoOrbit() > eclipsePeriod;
+    isInSunlight_ = TimeIntoOrbit() > SharedTypes::eclipseSeconds;
 
     // fault injection
     if (chaosEnabled_ && QRandomGenerator::global()->generateDouble() < deltaTimeSeconds / meanSecondsBetweenFaults)
         FailRandomSensor(QRandomGenerator::global()->bounded(3));
 
     // power checks
-    PayloadCheck();
+    //PayloadCheck();
     CommsCheck();
     HeaterCheck();
     RadiatorCheck();
@@ -219,39 +219,39 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
     telemetry.communicationsAvailable = communicationsAvailable_;
     telemetry.commsTransmitting = commsTransmitting_;
     telemetry.payloadEnabled = payloadEnabled_;
-    telemetry.secondsUntilSunrise = isInSunlight_ ? 0.f : eclipsePeriod - TimeIntoOrbit();
+    telemetry.secondsUntilSunrise = isInSunlight_ ? 0.f : SharedTypes::eclipseSeconds - TimeIntoOrbit();
     return telemetry;
 }
 
-void SpacecraftSimulator::PayloadCheck()
-{
-    if (mode_ != SharedTypes::Mode::nominal)
-    {
-        if (payloadEnabled_)
-            payloadEnabled_ = false;
-
-        return;
-    }
-
-    if (!payloadEnabled_)
-    {
-        float timeInOrbit = TimeIntoOrbit();
-        if (timeInOrbit >= payloadStartTime && timeInOrbit <= payloadEndTime && BatteryCalculation() > 30.f)
-        {
-            payloadEnabled_ = true;
-            cout << "Payload Enabled" << endl;
-        }
-    }
-    else
-    {
-        float timeInOrbit = TimeIntoOrbit();
-        if (timeInOrbit > payloadEndTime || timeInOrbit < payloadStartTime)
-        {
-            payloadEnabled_ = false;
-            cout << "Payload Disabled" << endl;
-        }
-    }
-}
+//void SpacecraftSimulator::PayloadCheck()
+//{
+//    if (mode_ != SharedTypes::Mode::nominal)
+//    {
+//        if (payloadEnabled_)
+//            payloadEnabled_ = false;
+//
+//        return;
+//    }
+//
+//    if (!payloadEnabled_)
+//    {
+//        float timeInOrbit = TimeIntoOrbit();
+//        if (timeInOrbit >= payloadStartTime && timeInOrbit <= payloadEndTime && BatteryCalculation() > 30.f)
+//        {
+//            payloadEnabled_ = true;
+//            cout << "Payload Enabled" << endl;
+//        }
+//    }
+//    else
+//    {
+//        float timeInOrbit = TimeIntoOrbit();
+//        if (timeInOrbit > payloadEndTime || timeInOrbit < payloadStartTime)
+//        {
+//            payloadEnabled_ = false;
+//            cout << "Payload Disabled" << endl;
+//        }
+//    }
+//}
 
 void SpacecraftSimulator::CommsCheck()
 {
@@ -417,6 +417,7 @@ void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
         return;
     }
     mode_ = commands->mode;
+    payloadEnabled_ = commands->payloadEnabled;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
