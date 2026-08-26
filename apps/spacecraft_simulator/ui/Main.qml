@@ -27,11 +27,11 @@ ApplicationWindow {
 
     visible: true
     visibility: Window.FullScreen
-    //width: Screen.width / 2
-    //height: Screen.desktopAvailableHeight
+    width: Screen.width / 2
+    height: Screen.desktopAvailableHeight
 
-    //x: 0
-    //y: 0
+    x: 0
+    y: 0
 
     title: "Spacecraft Simulator"
 
@@ -41,6 +41,22 @@ ApplicationWindow {
     readonly property int rowHeight: Math.floor(readoutGrid.height / readoutRowCount)
     readonly property int baseFontSize: Math.round(rowHeight * 0.45)
     readonly property int cellPadding: Math.round(baseFontSize * 0.5)
+
+    MouseArea {
+        width: 80
+        height: 80
+        anchors.top: parent.top
+        anchors.right: parent.right
+        onPressAndHold: Qt.quit()    // fires after holding ~0.8 s
+    }
+
+    MouseArea {
+        width: 80
+        height: 80
+        anchors.top: parent.top
+        anchors.left: parent.left
+        onPressAndHold: root.toggleFullScreen()
+    }
 
     // Esc Key exits full screen mode and returns to windowed mode, or vice versa
     Shortcut {
