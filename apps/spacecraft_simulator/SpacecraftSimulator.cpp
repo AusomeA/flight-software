@@ -256,70 +256,70 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
 void SpacecraftSimulator::CommsCheck()
 {
     float timeInOrbit = TimeIntoOrbit();
-    communicationsAvailable_ = timeInOrbit >= commsStart && timeInOrbit <= commsEnd;
+    communicationsAvailable_ = timeInOrbit >= SharedTypes::commsStart && timeInOrbit <= SharedTypes::commsEnd;
 
-    if (mode_ == SharedTypes::Mode::safe)
-    {
-        if (!commsTransmitting_)
-        {
-            float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, beaconPeriodSeconds);
-            if (timeIntoBeaconCycle <= beaconTransmitSeconds)
-            {
-                commsTransmitting_ = true;
-                cout << "Comms Transmitting in Safe Mode (Beacon Mode)" << endl;
-            }
-        }
-        else
-        {
-            float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, beaconPeriodSeconds);
-            if (timeIntoBeaconCycle > beaconTransmitSeconds)
-            {
-                commsTransmitting_ = false;
-                cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)" << endl;
-            }
-        }
-        return;
-    }
-
-    if (mode_ == SharedTypes::Mode::degraded)
-    {
-        float commsQuarterWindow = (commsEnd - commsStart) / 4;
-
-        if (!commsTransmitting_)
-        {
-            if (timeInOrbit >= commsStart + commsQuarterWindow && timeInOrbit <= commsEnd - commsQuarterWindow)
-            {
-                commsTransmitting_ = true;
-                cout << "Comms Transmitting in Degraded Mode" << endl;
-            }
-        }
-        else
-        {
-            if (timeInOrbit < commsStart + commsQuarterWindow || timeInOrbit > commsEnd - commsQuarterWindow)
-            {
-                commsTransmitting_ = false;
-                cout << "Comms Stopped Transmitting in Degraded Mode" << endl;
-            }
-        }
-        return;
-    }
-
-    if (!commsTransmitting_)
-    {
-        if (timeInOrbit >= commsStart && timeInOrbit <= commsEnd && BatteryCalculation() > 10.f)
-        {
-            commsTransmitting_ = true;
-            cout << "Comms Transmitting..." << endl;
-        }
-    }
-    else
-    {
-        if (timeInOrbit > commsEnd || timeInOrbit < commsStart)
-        {
-            commsTransmitting_ = false;
-            cout << "Comms Stopped Transmitting" << endl;
-        }
-    }
+    //if (mode_ == SharedTypes::Mode::safe)
+    //{
+    //    if (!commsTransmitting_)
+    //    {
+    //        float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, SharedTypes::beaconPeriodSeconds);
+    //        if (timeIntoBeaconCycle <= SharedTypes::beaconTransmitSeconds)
+    //        {
+    //            commsTransmitting_ = true;
+    //            cout << "Comms Transmitting in Safe Mode (Beacon Mode)" << endl;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, SharedTypes::beaconPeriodSeconds);
+    //        if (timeIntoBeaconCycle > SharedTypes::beaconTransmitSeconds)
+    //        {
+    //            commsTransmitting_ = false;
+    //            cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)" << endl;
+    //        }
+    //    }
+    //    return;
+    //}
+//
+    //if (mode_ == SharedTypes::Mode::degraded)
+    //{
+    //    float commsQuarterWindow = (SharedTypes::commsEnd - SharedTypes::commsStart) / 4;
+//
+    //    if (!commsTransmitting_)
+    //    {
+    //        if (timeInOrbit >= commsStart + commsQuarterWindow && timeInOrbit <= commsEnd - commsQuarterWindow)
+    //        {
+    //            commsTransmitting_ = true;
+    //            cout << "Comms Transmitting in Degraded Mode" << endl;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        if (timeInOrbit < commsStart + commsQuarterWindow || timeInOrbit > commsEnd - commsQuarterWindow)
+    //        {
+    //            commsTransmitting_ = false;
+    //            cout << "Comms Stopped Transmitting in Degraded Mode" << endl;
+    //        }
+    //    }
+    //    return;
+    //}
+//
+    //if (!commsTransmitting_)
+    //{
+    //    if (timeInOrbit >= commsStart && timeInOrbit <= commsEnd && BatteryCalculation() > 10.f)
+    //    {
+    //        commsTransmitting_ = true;
+    //        cout << "Comms Transmitting..." << endl;
+    //    }
+    //}
+    //else
+    //{
+    //    if (timeInOrbit > commsEnd || timeInOrbit < commsStart)
+    //    {
+    //        commsTransmitting_ = false;
+    //        cout << "Comms Stopped Transmitting" << endl;
+    //    }
+    //}
 }
 
 void SpacecraftSimulator::HeaterCheck()
@@ -418,6 +418,7 @@ void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
     }
     mode_ = commands->mode;
     payloadEnabled_ = commands->payloadEnabled;
+    commsTransmitting_ = commands->commsTransmitting;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

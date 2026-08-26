@@ -143,11 +143,11 @@ private:
     //static constexpr float payloadEndTime = 1500.f;
     
     // Comms Variables
-    static constexpr float commsStart = 1200.f; // comms available start and end windows
-    static constexpr float commsEnd = 1800.f;
-    
-    static constexpr float beaconPeriodSeconds = 150.f;  // safe mode beacon times
-    static constexpr float beaconTransmitSeconds = 15.f; // transmit for this many seconds every beacon period
+    //static constexpr float commsStart = 1200.f; // comms available start and end windows
+    //static constexpr float commsEnd = 1800.f;
+    //
+    //static constexpr float beaconPeriodSeconds = 150.f;  // safe mode beacon times
+    //static constexpr float beaconTransmitSeconds = 15.f; // transmit for this many seconds every beacon period
     
     // Functions
 

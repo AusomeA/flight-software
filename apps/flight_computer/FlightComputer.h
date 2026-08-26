@@ -16,6 +16,7 @@ public:
 private:
     SharedTypes::Mode mode_;
     bool payloadEnabled_;
+    bool commsTransmitting_;
     SharedTypes::Telemetry telemetry_;
 
     double lastGroundContactSeconds_;
@@ -26,8 +27,12 @@ private:
 
     static constexpr float minPayloadBatteryPercent = 30.f;
 
+    static constexpr float minCommsBatteryPercent = 10.f;
+
     void ModeCheck();
     void PayloadCheck();
+    void CommsCheck();
+
     float TimeIntoOrbit() const;
 
     ///////// Testing Functions ///////////

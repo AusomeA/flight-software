@@ -20,6 +20,12 @@ namespace SharedTypes
     inline constexpr float payloadStartTime = 900.f;
     inline constexpr float payloadEndTime = 1500.f;
 
+    // Comms variables
+    inline constexpr float commsStart = 1200.f;
+    inline constexpr float commsEnd = 1800.f;
+    inline constexpr float beaconPeriodSeconds = 150.f;
+    inline constexpr float beaconTransmitSeconds = 15.f;
+
     enum class Mode
     {
         nominal,

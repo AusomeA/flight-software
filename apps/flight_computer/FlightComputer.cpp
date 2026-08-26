@@ -6,6 +6,7 @@ using namespace std;
 FlightComputer::FlightComputer()
     : mode_(SharedTypes::Mode::nominal),
       payloadEnabled_(false),
+      commsTransmitting_(false),
       lastGroundContactSeconds_(0.0)
 {
 }
@@ -19,10 +20,12 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
 
     ModeCheck();
     PayloadCheck();
+    CommsCheck();
 
     SharedTypes::Commands commands;
     commands.mode = mode_;
     commands.payloadEnabled = payloadEnabled_;
+    commands.commsTransmitting = commsTransmitting_;
     return commands;
 }
 
@@ -105,7 +108,73 @@ void FlightComputer::PayloadCheck()
     }
 }
 
+void FlightComputer::CommsCheck()
+{
+    float timeInOrbit = TimeIntoOrbit();
 
+    if (mode_ == SharedTypes::Mode::safe)
+    {
+        if (!commsTransmitting_)
+        {
+            float timeIntoBeaconCycle = fmod(telemetry_.missionElapsedTimeSeconds, SharedTypes::beaconPeriodSeconds);
+            if (timeIntoBeaconCycle <= SharedTypes::beaconTransmitSeconds)
+            {
+                commsTransmitting_ = true;
+                cout << "Comms Transmitting in Safe Mode (Beacon Mode)" << endl;
+            }
+        }
+        else
+        {
+            float timeIntoBeaconCycle = fmod(telemetry_.missionElapsedTimeSeconds, SharedTypes::beaconPeriodSeconds);
+            if (timeIntoBeaconCycle > SharedTypes::beaconTransmitSeconds)
+            {
+                commsTransmitting_ = false;
+                cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)" << endl;
+            }
+        }
+        return;
+    }
+
+    if (mode_ == SharedTypes::Mode::degraded)
+    {
+        float commsQuarterWindow = (SharedTypes::commsEnd - SharedTypes::commsStart) / 4;
+
+        if (!commsTransmitting_)
+        {
+            if (timeInOrbit >= SharedTypes::commsStart + commsQuarterWindow && timeInOrbit <= SharedTypes::commsEnd - commsQuarterWindow)
+            {
+                commsTransmitting_ = true;
+                cout << "Comms Transmitting in Degraded Mode" << endl;
+            }
+        }
+        else
+        {
+            if (timeInOrbit < SharedTypes::commsStart + commsQuarterWindow || timeInOrbit > SharedTypes::commsEnd - commsQuarterWindow)
+            {
+                commsTransmitting_ = false;
+                cout << "Comms Stopped Transmitting in Degraded Mode" << endl;
+            }
+        }
+        return;
+    }
+
+    if (!commsTransmitting_)
+    {
+        if (timeInOrbit >= SharedTypes::commsStart && timeInOrbit <= SharedTypes::commsEnd && telemetry_.batteryPercent > minCommsBatteryPercent)
+        {
+            commsTransmitting_ = true;
+            cout << "Comms Transmitting..." << endl;
+        }
+    }
+    else
+    {
+        if (timeInOrbit > SharedTypes::commsEnd || timeInOrbit < SharedTypes::commsStart)
+        {
+            commsTransmitting_ = false;
+            cout << "Comms Stopped Transmitting" << endl;
+        }
+    }
+}
 
 
 
