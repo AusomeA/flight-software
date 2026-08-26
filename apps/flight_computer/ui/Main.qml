@@ -27,7 +27,7 @@ ApplicationWindow {
     }
 
     visible: true
-    visibility: Window.Windowed
+    visibility: Window.FullScreen
     //width: Screen.width / 2
     //height: Screen.height - 20
 
