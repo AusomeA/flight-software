@@ -25,6 +25,10 @@ ApplicationWindow {
         }
     }
 
+    function toggleFullScreen() {
+        root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen
+    }
+
     visible: true
     visibility: Window.FullScreen
     width: Screen.width / 2

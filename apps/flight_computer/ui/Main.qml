@@ -25,6 +25,10 @@ ApplicationWindow {
             return "white"; // none / unknown
         }
     }
+    
+    function toggleFullScreen() {
+        root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen
+    }
 
     visible: true
     visibility: Window.FullScreen
