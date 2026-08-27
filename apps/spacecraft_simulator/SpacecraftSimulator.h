@@ -138,6 +138,10 @@ private:
     // Time Scale Variables
     static constexpr float minTimeScale = .5f;
     static constexpr float maxTimeScale = 64.f;
+
+    // Radiator Variables
+    static constexpr float radiatorLouversOpenCelsius = 25.f;
+    static constexpr float radiatorLouversClosedCelsius = 20.f;
     
     //// Payload Variables
     //static constexpr float payloadStartTime = 900.f; // payload begins working start and end windows

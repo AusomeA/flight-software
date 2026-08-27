@@ -136,7 +136,7 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     //PayloadCheck();
     CommandLossCheck();
     CommsCheck();
-    HeaterCheck();
+    //HeaterCheck();
     RadiatorCheck();
 
     // watts calculations
@@ -326,12 +326,12 @@ void SpacecraftSimulator::CommsCheck()
 
 void SpacecraftSimulator::HeaterCheck()
 {
-    if (!heaterEnabled_ && !isInSunlight_ && temperatureCelsius_ <= 15.f)
+    if (!heaterEnabled_ && !isInSunlight_ && temperatureCelsius_ <= SharedTypes::heaterOnCelsius)
     {
         heaterEnabled_ = true;
         cout << "Heater turned on" << endl;
     }
-    else if (heaterEnabled_ && (isInSunlight_ || temperatureCelsius_ > 25.f))
+    else if (heaterEnabled_ && (isInSunlight_ || temperatureCelsius_ > SharedTypes::heaterOffCelsius))
     {
         heaterEnabled_ = false;
         cout << "Heater turned off" << endl;
@@ -340,12 +340,12 @@ void SpacecraftSimulator::HeaterCheck()
 
 void SpacecraftSimulator::RadiatorCheck()
 {
-    if (!radiatorLouversOpen_ && isInSunlight_ && temperatureCelsius_ >= 25.f)
+    if (!radiatorLouversOpen_ && isInSunlight_ && temperatureCelsius_ >= radiatorLouversOpenCelsius)
     {
         radiatorLouversOpen_ = true;
         cout << "Radiator louvers opened" << endl;
     }
-    else if (radiatorLouversOpen_ && (!isInSunlight_ || temperatureCelsius_ < 20.f))
+    else if (radiatorLouversOpen_ && (!isInSunlight_ || temperatureCelsius_ < radiatorLouversClosedCelsius))
     {
         radiatorLouversOpen_ = false;
         cout << "Radiator louvers closed" << endl;
@@ -371,6 +371,7 @@ void SpacecraftSimulator::CommandLossCheck()
     return;
 
     payloadEnabled_ = false;
+    HeaterCheck();
 
     float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, SharedTypes::beaconPeriodSeconds);
     commsTransmitting_ = timeIntoBeaconCycle <= SharedTypes::beaconTransmitSeconds;
@@ -445,6 +446,7 @@ void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
     mode_ = commands->mode;
     payloadEnabled_ = commands->payloadEnabled;
     commsTransmitting_ = commands->commsTransmitting;
+    heaterEnabled_ = commands->heaterEnabled;
     timeSinceLastCommand_.restart();
 }
 

@@ -28,6 +28,10 @@ namespace SharedTypes
 
     inline constexpr int linkLostMilliseconds = 3000;
 
+    // Heater variables
+    inline constexpr float heaterOnCelsius = 15.f;
+    inline constexpr float heaterOffCelsius = 25.f;
+
     enum class Mode
     {
         nominal,

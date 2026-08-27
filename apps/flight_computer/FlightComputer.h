@@ -17,6 +17,8 @@ private:
     SharedTypes::Mode mode_;
     bool payloadEnabled_;
     bool commsTransmitting_;
+    bool heaterEnabled_;        // FC's own last-commanded state - deliberately NOT read from telemetry
+
     SharedTypes::Telemetry telemetry_;
 
     double lastGroundContactSeconds_;
@@ -32,6 +34,7 @@ private:
     void ModeCheck();
     void PayloadCheck();
     void CommsCheck();
+    void HeaterCheck();
 
     float TimeIntoOrbit() const;
 

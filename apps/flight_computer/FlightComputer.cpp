@@ -7,6 +7,7 @@ FlightComputer::FlightComputer()
     : mode_(SharedTypes::Mode::nominal),
       payloadEnabled_(false),
       commsTransmitting_(false),
+      heaterEnabled_(false),
       lastGroundContactSeconds_(0.0)
 {
 }
@@ -21,11 +22,14 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
     ModeCheck();
     PayloadCheck();
     CommsCheck();
+    HeaterCheck();
 
     SharedTypes::Commands commands;
     commands.mode = mode_;
     commands.payloadEnabled = payloadEnabled_;
     commands.commsTransmitting = commsTransmitting_;
+    commands.heaterEnabled = heaterEnabled_;
+    
     return commands;
 }
 
@@ -176,6 +180,19 @@ void FlightComputer::CommsCheck()
     }
 }
 
+void FlightComputer::HeaterCheck()
+{
+    if (!heaterEnabled_ && !telemetry_.isInSunlight && telemetry_.temperatureCelsius <= SharedTypes::heaterOnCelsius)
+    {
+        heaterEnabled_ = true;
+        cout << "Heater commanded on" << endl;
+    }
+    else if (heaterEnabled_ && (telemetry_.isInSunlight || telemetry_.temperatureCelsius > SharedTypes::heaterOffCelsius))
+    {
+        heaterEnabled_ = false;
+        cout << "Heater commanded off" << endl;
+    }
+}
 
 
 
