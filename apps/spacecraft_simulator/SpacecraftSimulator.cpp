@@ -35,7 +35,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       commsTransmitting_(false),
       heaterEnabled_(false),
       radiatorLouversOpen_(false),
-      chaosEnabled_(false)
+      chaosEnabled_(false),
+      inCommandFallback_(true)   // Assume no contact until we make contact
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
@@ -133,6 +134,7 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
 
     // power checks
     //PayloadCheck();
+    CommandLossCheck();
     CommsCheck();
     HeaterCheck();
     RadiatorCheck();
@@ -350,6 +352,30 @@ void SpacecraftSimulator::RadiatorCheck()
     }
 }
 
+void SpacecraftSimulator::CommandLossCheck()
+{
+    bool commandsLost = !timeSinceLastCommand_.isValid() || timeSinceLastCommand_.elapsed() > SharedTypes::linkLostMilliseconds;
+
+    if (commandsLost && !inCommandFallback_)
+    {
+        inCommandFallback_ = true;
+        cout << "Command link lost to flight computer - entering fallback" << endl;
+    }
+    else if (!commandsLost && inCommandFallback_)
+    {
+        inCommandFallback_ = false;
+        cout << "Command link restored" << endl;    
+    }
+    
+    if (!inCommandFallback_)
+    return;
+
+    payloadEnabled_ = false;
+
+    float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, SharedTypes::beaconPeriodSeconds);
+    commsTransmitting_ = timeIntoBeaconCycle <= SharedTypes::beaconTransmitSeconds;
+}
+
 void SpacecraftSimulator::PopulateReadouts()
 {
     QVector<ReadoutRow> rows{
@@ -419,6 +445,7 @@ void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
     mode_ = commands->mode;
     payloadEnabled_ = commands->payloadEnabled;
     commsTransmitting_ = commands->commsTransmitting;
+    timeSinceLastCommand_.restart();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////

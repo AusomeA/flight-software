@@ -55,7 +55,7 @@ Q_OBJECT
     QTimer linkCheckTimer_;
     QElapsedTimer timeSinceLastPacket_;
 
-    static constexpr int linkLostMilliseconds = 3000;
+    //static constexpr int linkLostMilliseconds = 3000;
     static constexpr int linkCheckIntervalMilliseconds = 200;
 
     void HandleTelemetry(const QByteArray &payload);

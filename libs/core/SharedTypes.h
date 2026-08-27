@@ -26,6 +26,8 @@ namespace SharedTypes
     inline constexpr float beaconPeriodSeconds = 150.f;
     inline constexpr float beaconTransmitSeconds = 15.f;
 
+    inline constexpr int linkLostMilliseconds = 3000;
+
     enum class Mode
     {
         nominal,

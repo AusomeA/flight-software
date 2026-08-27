@@ -5,6 +5,7 @@
 #include <QString>
 #include <QUdpSocket>
 #include <QHostAddress>
+#include <QElapsedTimer>
 #include "SharedTypes.h"
 #include "ReadoutsModel.h"
 #include "UdpReceiver.h"
@@ -152,6 +153,8 @@ private:
     // Functions
 
     QTimer updateTimer_;
+    QElapsedTimer timeSinceLastCommand_;
+    bool inCommandFallback_;                // true when we have lost contact with the flight computer
 
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
 
@@ -165,6 +168,7 @@ private:
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();
+    void CommandLossCheck();
 
     void PopulateReadouts();
     void UpdateReadouts();

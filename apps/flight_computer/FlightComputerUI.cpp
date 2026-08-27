@@ -91,7 +91,7 @@ void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
 void FlightComputerUI::UpdateLinkRow()
 {
     const qint64 silentMillisecond = timeSinceLastPacket_.elapsed();
-    const bool linkLost = silentMillisecond > linkLostMilliseconds;
+    const bool linkLost = silentMillisecond > SharedTypes::linkLostMilliseconds;
 
     readoutsModel_.UpdateRow(linkRow, linkLost ? QString("No Link (%1 s)").arg(silentMillisecond / 1000.0, 0, 'f', 1) : "Good Link", static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
 
