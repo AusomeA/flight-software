@@ -36,7 +36,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       heaterEnabled_(false),
       radiatorLouversOpen_(false),
       chaosEnabled_(false),
-      inCommandFallback_(true)   // Assume no contact until we make contact
+      inCommandFallback_(false), // 3 s grace period before we fallback
+      brownedOut_(false)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
@@ -44,12 +45,14 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     telemetrySendTimer_.start(telemetrySendIntervalMilliseconds);
 
     const QStringList arguments = QCoreApplication::arguments();
-    if(arguments.size() > 1)
+    if (arguments.size() > 1)
     {
         flightComputerAddress_ = QHostAddress(arguments[1]);
-        if(flightComputerAddress_.isNull())
+        if (flightComputerAddress_.isNull())
             qFatal("Invalid address argument: %s", qPrintable(arguments[1]));
     }
+
+    timeSinceLastCommand_.start();
 }
 
 QString SpacecraftSimulator::StateText() const
@@ -133,11 +136,10 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
         FailRandomSensor(QRandomGenerator::global()->bounded(3));
 
     // power checks
-    //PayloadCheck();
     CommandLossCheck();
     CommsCheck();
-    //HeaterCheck();
     RadiatorCheck();
+    BrownoutCheck();
 
     // watts calculations
     if (isInSunlight_)
@@ -225,117 +227,78 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
     return telemetry;
 }
 
-//void SpacecraftSimulator::PayloadCheck()
+// void SpacecraftSimulator::PayloadCheck()
 //{
-//    if (mode_ != SharedTypes::Mode::nominal)
-//    {
-//        if (payloadEnabled_)
-//            payloadEnabled_ = false;
+//     if (mode_ != SharedTypes::Mode::nominal)
+//     {
+//         if (payloadEnabled_)
+//             payloadEnabled_ = false;
 //
-//        return;
-//    }
+//         return;
+//     }
 //
-//    if (!payloadEnabled_)
-//    {
-//        float timeInOrbit = TimeIntoOrbit();
-//        if (timeInOrbit >= payloadStartTime && timeInOrbit <= payloadEndTime && BatteryCalculation() > 30.f)
-//        {
-//            payloadEnabled_ = true;
-//            cout << "Payload Enabled" << endl;
-//        }
-//    }
-//    else
-//    {
-//        float timeInOrbit = TimeIntoOrbit();
-//        if (timeInOrbit > payloadEndTime || timeInOrbit < payloadStartTime)
-//        {
-//            payloadEnabled_ = false;
-//            cout << "Payload Disabled" << endl;
-//        }
-//    }
-//}
+//     if (!payloadEnabled_)
+//     {
+//         float timeInOrbit = TimeIntoOrbit();
+//         if (timeInOrbit >= payloadStartTime && timeInOrbit <= payloadEndTime && BatteryCalculation() > 30.f)
+//         {
+//             payloadEnabled_ = true;
+//             cout << "Payload Enabled" << endl;
+//         }
+//     }
+//     else
+//     {
+//         float timeInOrbit = TimeIntoOrbit();
+//         if (timeInOrbit > payloadEndTime || timeInOrbit < payloadStartTime)
+//         {
+//             payloadEnabled_ = false;
+//             cout << "Payload Disabled" << endl;
+//         }
+//     }
+// }
+
+void SpacecraftSimulator::SetHeater(bool enabled)
+{
+    if (enabled == heaterEnabled_)
+        return;
+
+    heaterEnabled_ = enabled;
+    cout << (enabled ? "Heater turned on" : "Heater turned off") << endl;
+}
+
+void SpacecraftSimulator::BrownoutCheck()
+{
+    if (!brownedOut_ && batteryEnergyWattHours_ <= 0.f)
+    {
+        brownedOut_ = true;
+        cout << "Battery depleted" << endl;
+    }
+    else if (brownedOut_ && BatteryCalculation() > brownoutRecoveryPercent)
+    {
+        brownedOut_ = false;
+        cout << "Battery recovered" << endl;
+    }
+
+    if(brownedOut_)
+    {
+        payloadEnabled_ = false;
+        commsTransmitting_ = false;
+        SetHeater(false);
+    }
+}
 
 void SpacecraftSimulator::CommsCheck()
 {
     float timeInOrbit = TimeIntoOrbit();
     communicationsAvailable_ = timeInOrbit >= SharedTypes::commsStart && timeInOrbit <= SharedTypes::commsEnd;
-
-    //if (mode_ == SharedTypes::Mode::safe)
-    //{
-    //    if (!commsTransmitting_)
-    //    {
-    //        float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, SharedTypes::beaconPeriodSeconds);
-    //        if (timeIntoBeaconCycle <= SharedTypes::beaconTransmitSeconds)
-    //        {
-    //            commsTransmitting_ = true;
-    //            cout << "Comms Transmitting in Safe Mode (Beacon Mode)" << endl;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        float timeIntoBeaconCycle = fmod(missionElapsedTimeSeconds_, SharedTypes::beaconPeriodSeconds);
-    //        if (timeIntoBeaconCycle > SharedTypes::beaconTransmitSeconds)
-    //        {
-    //            commsTransmitting_ = false;
-    //            cout << "Comms Stopped Transmitting in Safe Mode (Beacon Mode)" << endl;
-    //        }
-    //    }
-    //    return;
-    //}
-//
-    //if (mode_ == SharedTypes::Mode::degraded)
-    //{
-    //    float commsQuarterWindow = (SharedTypes::commsEnd - SharedTypes::commsStart) / 4;
-//
-    //    if (!commsTransmitting_)
-    //    {
-    //        if (timeInOrbit >= commsStart + commsQuarterWindow && timeInOrbit <= commsEnd - commsQuarterWindow)
-    //        {
-    //            commsTransmitting_ = true;
-    //            cout << "Comms Transmitting in Degraded Mode" << endl;
-    //        }
-    //    }
-    //    else
-    //    {
-    //        if (timeInOrbit < commsStart + commsQuarterWindow || timeInOrbit > commsEnd - commsQuarterWindow)
-    //        {
-    //            commsTransmitting_ = false;
-    //            cout << "Comms Stopped Transmitting in Degraded Mode" << endl;
-    //        }
-    //    }
-    //    return;
-    //}
-//
-    //if (!commsTransmitting_)
-    //{
-    //    if (timeInOrbit >= commsStart && timeInOrbit <= commsEnd && BatteryCalculation() > 10.f)
-    //    {
-    //        commsTransmitting_ = true;
-    //        cout << "Comms Transmitting..." << endl;
-    //    }
-    //}
-    //else
-    //{
-    //    if (timeInOrbit > commsEnd || timeInOrbit < commsStart)
-    //    {
-    //        commsTransmitting_ = false;
-    //        cout << "Comms Stopped Transmitting" << endl;
-    //    }
-    //}
 }
 
 void SpacecraftSimulator::HeaterCheck()
 {
-    if (!heaterEnabled_ && !isInSunlight_ && temperatureCelsius_ <= SharedTypes::heaterOnCelsius)
-    {
-        heaterEnabled_ = true;
-        cout << "Heater turned on" << endl;
-    }
-    else if (heaterEnabled_ && (isInSunlight_ || temperatureCelsius_ > SharedTypes::heaterOffCelsius))
-    {
-        heaterEnabled_ = false;
-        cout << "Heater turned off" << endl;
-    }
+    if (!heaterEnabled_ && !isInSunlight_ && temperatureCelsius_ <= survivalHeaterOnCelsius)
+        SetHeater(true);
+    else if (heaterEnabled_ && (isInSunlight_ || temperatureCelsius_ > survivalHeaterOffCelsius))
+        SetHeater(false);
 }
 
 void SpacecraftSimulator::RadiatorCheck()
@@ -354,7 +317,7 @@ void SpacecraftSimulator::RadiatorCheck()
 
 void SpacecraftSimulator::CommandLossCheck()
 {
-    bool commandsLost = !timeSinceLastCommand_.isValid() || timeSinceLastCommand_.elapsed() > SharedTypes::linkLostMilliseconds;
+    bool commandsLost = timeSinceLastCommand_.elapsed() > SharedTypes::linkLostMilliseconds;
 
     if (commandsLost && !inCommandFallback_)
     {
@@ -364,11 +327,11 @@ void SpacecraftSimulator::CommandLossCheck()
     else if (!commandsLost && inCommandFallback_)
     {
         inCommandFallback_ = false;
-        cout << "Command link restored" << endl;    
+        cout << "Command link restored" << endl;
     }
-    
+
     if (!inCommandFallback_)
-    return;
+        return;
 
     payloadEnabled_ = false;
     HeaterCheck();
@@ -431,14 +394,14 @@ void SpacecraftSimulator::UpdateReadouts()
 
 void SpacecraftSimulator::SendTelemetry()
 {
-    telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()), 
-                                    flightComputerAddress_, SharedTypes::telemetryPort); // local host changes when we move to pi's
+    telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()),
+                                   flightComputerAddress_, SharedTypes::telemetryPort); // local host changes when we move to pi's
 }
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
 {
     std::optional<SharedTypes::Commands> commands = CommandsFromJson(payload);
-    if(!commands)
+    if (!commands)
     {
         qWarning() << "Dropped malformed command packet";
         return;
@@ -446,7 +409,7 @@ void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
     mode_ = commands->mode;
     payloadEnabled_ = commands->payloadEnabled;
     commsTransmitting_ = commands->commsTransmitting;
-    heaterEnabled_ = commands->heaterEnabled;
+    SetHeater(commands->heaterEnabled);
     timeSinceLastCommand_.restart();
 }
 

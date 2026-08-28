@@ -112,11 +112,6 @@ private:
     
     ReadoutsModel readoutsModel_;
     
-    //// Sunlight Variables
-    //static constexpr float orbitPeriodSeconds = 5400.f;                        // 5400 seconds = 90 minutes
-    //static constexpr float sunlitSeconds = 3000.f;                             // 3000 seconds = 50 minutes
-    //static constexpr float eclipsePeriod = orbitPeriodSeconds - sunlitSeconds; // 90 - 50 = 40 minutes (subject to change if other values change)
-    
     // Power Consumption Variables
     static constexpr float basePowerConsumption = 5.f; // how much power is consumed, even in safe mode
     static constexpr float avionicsPowerConsumption = 8.f;
@@ -142,23 +137,20 @@ private:
     // Radiator Variables
     static constexpr float radiatorLouversOpenCelsius = 25.f;
     static constexpr float radiatorLouversClosedCelsius = 20.f;
-    
-    //// Payload Variables
-    //static constexpr float payloadStartTime = 900.f; // payload begins working start and end windows
-    //static constexpr float payloadEndTime = 1500.f;
-    
-    // Comms Variables
-    //static constexpr float commsStart = 1200.f; // comms available start and end windows
-    //static constexpr float commsEnd = 1800.f;
-    //
-    //static constexpr float beaconPeriodSeconds = 150.f;  // safe mode beacon times
-    //static constexpr float beaconTransmitSeconds = 15.f; // transmit for this many seconds every beacon period
+
+    // Survivor Heater Variables
+    static constexpr float survivalHeaterOnCelsius = 5.f;
+    static constexpr float survivalHeaterOffCelsius = 15.f;
+
+    // Brownout variables
+    static constexpr float brownoutRecoveryPercent = 5.f;
     
     // Functions
 
     QTimer updateTimer_;
     QElapsedTimer timeSinceLastCommand_;
     bool inCommandFallback_;                // true when we have lost contact with the flight computer
+    bool brownedOut_;
 
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
 
@@ -168,7 +160,9 @@ private:
 
     SharedTypes::Telemetry BuildTelemetry() const;
 
-    //void PayloadCheck();
+    void SetHeater(bool enabled);
+
+    void BrownoutCheck();
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();

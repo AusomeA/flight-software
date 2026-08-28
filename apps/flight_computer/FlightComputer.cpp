@@ -8,13 +8,16 @@ FlightComputer::FlightComputer()
       payloadEnabled_(false),
       commsTransmitting_(false),
       heaterEnabled_(false),
-      lastGroundContactSeconds_(0.0)
+      lastGroundContactSeconds_(-1.0)
 {
 }
 
 SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telemetry)
 {
     telemetry_ = telemetry;
+
+    if(lastGroundContactSeconds_ < 0.0)
+        lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
 
     if (telemetry_.communicationsAvailable && telemetry_.commsTransmitting)
         lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
@@ -29,7 +32,7 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
     commands.payloadEnabled = payloadEnabled_;
     commands.commsTransmitting = commsTransmitting_;
     commands.heaterEnabled = heaterEnabled_;
-    
+
     return commands;
 }
 
