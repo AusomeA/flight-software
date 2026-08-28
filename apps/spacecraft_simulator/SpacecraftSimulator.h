@@ -143,14 +143,17 @@ private:
     static constexpr float survivalHeaterOffCelsius = 15.f;
 
     // Brownout variables
-    static constexpr float brownoutRecoveryPercent = 5.f;
+    static constexpr float brownoutEntryPercent = 5.f;
+    static constexpr float brownoutRecoveryPercent = 10.f;
+    static constexpr float blackoutRecoveryPercent = 5.f;
     
     // Functions
 
     QTimer updateTimer_;
     QElapsedTimer timeSinceLastCommand_;
     bool inCommandFallback_;                // true when we have lost contact with the flight computer
-    bool brownedOut_;
+    bool brownedOut_;                       // battery very low
+    bool blackedOut_;                       // battery depleted
 
     float BatteryCalculation() const { return batteryEnergyWattHours_ / batteryCapacityWattHours_ * 100.f; }
 
@@ -163,6 +166,7 @@ private:
     void SetHeater(bool enabled);
 
     void BrownoutCheck();
+    void BlackoutCheck();
     void CommsCheck();
     void HeaterCheck();
     void RadiatorCheck();

@@ -37,7 +37,8 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
       radiatorLouversOpen_(false),
       chaosEnabled_(false),
       inCommandFallback_(false), // 3 s grace period before we fallback
-      brownedOut_(false)
+      brownedOut_(false),
+      blackedOut_(false)
 {
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
@@ -131,15 +132,21 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     // sun calculation
     isInSunlight_ = TimeIntoOrbit() > SharedTypes::eclipseSeconds;
 
-    // fault injection
-    if (chaosEnabled_ && QRandomGenerator::global()->generateDouble() < deltaTimeSeconds / meanSecondsBetweenFaults)
-        FailRandomSensor(QRandomGenerator::global()->bounded(3));
+    if (!blackedOut_)
+    {
+        // fault injection
+        if (chaosEnabled_ && QRandomGenerator::global()->generateDouble() < deltaTimeSeconds / meanSecondsBetweenFaults)
+            FailRandomSensor(QRandomGenerator::global()->bounded(3));
 
-    // power checks
-    CommandLossCheck();
-    CommsCheck();
+        // power checks
+        CommandLossCheck();
+        CommsCheck();
+        BrownoutCheck();
+    }
+
+    BlackoutCheck();
+
     RadiatorCheck();
-    BrownoutCheck();
 
     // watts calculations
     if (isInSunlight_)
@@ -147,14 +154,19 @@ void SpacecraftSimulator::Update(double deltaTimeSeconds)
     else
         solarGenerationWatts_ = 0.f;
 
-    // power consumtion calculations
-    powerConsumptionWatts_ = basePowerConsumption + avionicsPowerConsumption;
-    if (payloadEnabled_)
-        powerConsumptionWatts_ += payloadPowerConsumption;
-    if (commsTransmitting_)
-        powerConsumptionWatts_ += commsPowerConsumption;
-    if (heaterEnabled_)
-        powerConsumptionWatts_ += heaterPowerConsumption;
+    if (blackedOut_)
+        powerConsumptionWatts_ = 0.f;
+    else
+    {
+        // power consumtion calculations
+        powerConsumptionWatts_ = basePowerConsumption + avionicsPowerConsumption;
+        if (payloadEnabled_)
+            powerConsumptionWatts_ += payloadPowerConsumption;
+        if (commsTransmitting_)
+            powerConsumptionWatts_ += commsPowerConsumption;
+        if (heaterEnabled_)
+            powerConsumptionWatts_ += heaterPowerConsumption;
+    }
 
     // battery calculations
     float netPowerWatts = solarGenerationWatts_ - powerConsumptionWatts_;
@@ -227,48 +239,20 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
     return telemetry;
 }
 
-// void SpacecraftSimulator::PayloadCheck()
-//{
-//     if (mode_ != SharedTypes::Mode::nominal)
-//     {
-//         if (payloadEnabled_)
-//             payloadEnabled_ = false;
-//
-//         return;
-//     }
-//
-//     if (!payloadEnabled_)
-//     {
-//         float timeInOrbit = TimeIntoOrbit();
-//         if (timeInOrbit >= payloadStartTime && timeInOrbit <= payloadEndTime && BatteryCalculation() > 30.f)
-//         {
-//             payloadEnabled_ = true;
-//             cout << "Payload Enabled" << endl;
-//         }
-//     }
-//     else
-//     {
-//         float timeInOrbit = TimeIntoOrbit();
-//         if (timeInOrbit > payloadEndTime || timeInOrbit < payloadStartTime)
-//         {
-//             payloadEnabled_ = false;
-//             cout << "Payload Disabled" << endl;
-//         }
-//     }
-// }
-
 void SpacecraftSimulator::SetHeater(bool enabled)
 {
     if (enabled == heaterEnabled_)
         return;
 
     heaterEnabled_ = enabled;
-    cout << (enabled ? "Heater turned on" : "Heater turned off") << endl;
+
+    if (!blackedOut_)
+        cout << (enabled ? "Heater turned on" : "Heater turned off") << endl;
 }
 
 void SpacecraftSimulator::BrownoutCheck()
 {
-    if (!brownedOut_ && batteryEnergyWattHours_ <= 0.f)
+    if (!brownedOut_ && BatteryCalculation() <= brownoutEntryPercent)
     {
         brownedOut_ = true;
         cout << "Battery depleted" << endl;
@@ -279,11 +263,30 @@ void SpacecraftSimulator::BrownoutCheck()
         cout << "Battery recovered" << endl;
     }
 
-    if(brownedOut_)
+    if (brownedOut_)
     {
         payloadEnabled_ = false;
         commsTransmitting_ = false;
         SetHeater(false);
+    }
+}
+
+void SpacecraftSimulator::BlackoutCheck()
+{
+    if (!blackedOut_ && batteryEnergyWattHours_ <= 0.5f)
+    {
+        blackedOut_ = true;
+        payloadEnabled_ = false;
+        commsTransmitting_ = false;
+        SetHeater(false);
+        cout << "Blackout" << endl;
+    }
+    else if (blackedOut_ && BatteryCalculation() > blackoutRecoveryPercent)
+    {
+        blackedOut_ = false;
+        inCommandFallback_ = false;
+        timeSinceLastCommand_.restart();
+        cout << "Recovered from blackout" << endl;
     }
 }
 
@@ -306,12 +309,14 @@ void SpacecraftSimulator::RadiatorCheck()
     if (!radiatorLouversOpen_ && isInSunlight_ && temperatureCelsius_ >= radiatorLouversOpenCelsius)
     {
         radiatorLouversOpen_ = true;
-        cout << "Radiator louvers opened" << endl;
+        if (!blackedOut_)
+            cout << "Radiator louvers opened" << endl;
     }
     else if (radiatorLouversOpen_ && (!isInSunlight_ || temperatureCelsius_ < radiatorLouversClosedCelsius))
     {
         radiatorLouversOpen_ = false;
-        cout << "Radiator louvers closed" << endl;
+        if (!blackedOut_)
+            cout << "Radiator louvers closed" << endl;
     }
 }
 
@@ -371,9 +376,12 @@ void SpacecraftSimulator::UpdateReadouts()
     SharedTypes::Status runningStatus = isRunning_ ? SharedTypes::Status::good : SharedTypes::Status::critical;
 
     readoutsModel_.UpdateRow(timeScaleRow, QString("%1 x").arg(timeScale_, 0, 'f', 1), static_cast<int>(SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(modeRow, mode_ == SharedTypes::Mode::nominal ? "Nominal" : mode_ == SharedTypes::Mode::degraded ? "Degraded"
-                                                                                                                             : "Safe",
-                             static_cast<int>(mode_));
+    readoutsModel_.UpdateRow(modeRow,
+                             inCommandFallback_                     ? "Fallback"
+                             : mode_ == SharedTypes::Mode::nominal  ? "Nominal"
+                             : mode_ == SharedTypes::Mode::degraded ? "Degraded"
+                                                                    : "Safe",
+                             static_cast<int>(inCommandFallback_ ? SharedTypes::Status::warning : static_cast<SharedTypes::Status>(mode_)));
     readoutsModel_.UpdateRow(runningRow, isRunning_ ? "Yes" : "No", static_cast<int>(runningStatus));
     readoutsModel_.UpdateRow(METRow, MissionElapsedTimeText(missionElapsedTimeSeconds_), static_cast<int>(SharedTypes::Status::none));
     readoutsModel_.UpdateRow(batteryRow, QString("%1 %").arg(BatteryCalculation(), 0, 'f', 1), static_cast<int>(GetBatteryStatus(BatteryCalculation())));
@@ -394,12 +402,18 @@ void SpacecraftSimulator::UpdateReadouts()
 
 void SpacecraftSimulator::SendTelemetry()
 {
+    if(blackedOut_)
+        return;
+
     telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()),
                                    flightComputerAddress_, SharedTypes::telemetryPort); // local host changes when we move to pi's
 }
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
 {
+    if(blackedOut_)
+        return;
+        
     std::optional<SharedTypes::Commands> commands = CommandsFromJson(payload);
     if (!commands)
     {
