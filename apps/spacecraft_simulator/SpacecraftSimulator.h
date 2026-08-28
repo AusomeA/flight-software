@@ -44,9 +44,6 @@ public:
 
     SpacecraftSimulator(QObject *parent = nullptr);
 
-    QString StateText() const;
-    void PrintState() const;
-
     Q_INVOKABLE void Start();
     Q_INVOKABLE void Stop();
     void Update(double deltaTimeSeconds);

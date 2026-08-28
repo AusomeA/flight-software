@@ -56,38 +56,6 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     timeSinceLastCommand_.start();
 }
 
-QString SpacecraftSimulator::StateText() const
-{
-    QString text;
-
-    if (isRunning_)
-    {
-        text += "Spacecraft State:\n";
-        text += QString("  Running: %1\n").arg(isRunning_ ? "Yes" : "No");
-        text += QString("  Mission Elapsed Time: %1 s\n").arg(missionElapsedTimeSeconds_);
-        text += QString("  Update Interval: %1 s\n").arg(updateIntervalSeconds_);
-        text += QString("  Battery: %1%\n").arg(BatteryCalculation());
-        text += QString("  Solar Generation: %1 W\n").arg(solarGenerationWatts_);
-        text += QString("  Power Consumption: %1 W\n").arg(powerConsumptionWatts_);
-        text += QString("  Temperature: %1 C\n").arg(temperatureCelsius_);
-        text += QString("  In Sunlight: %1\n").arg(isInSunlight_ ? "Yes" : "No");
-        text += QString("  Comms Available: %1\n").arg(communicationsAvailable_ ? "Yes" : "No");
-        text += QString("  Temp Sensor OK: %1\n").arg(temperatureSensorHealthy_ ? "Yes" : "No");
-        text += QString("  Power Sensor OK: %1\n").arg(powerSensorHealthy_ ? "Yes" : "No");
-        text += QString("  Attitude Sensor OK: %1\n").arg(attitudeSensorHealthy_ ? "Yes" : "No");
-        text += QString("  Payload Enabled: %1\n").arg(payloadEnabled_ ? "Yes" : "No");
-    }
-    else
-        text = "Simulation is not running. No state to display.\n";
-
-    return text;
-}
-
-void SpacecraftSimulator::PrintState() const
-{
-    cout << StateText().toStdString() << endl;
-}
-
 void SpacecraftSimulator::Start()
 {
     isRunning_ = true;

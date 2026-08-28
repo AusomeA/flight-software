@@ -69,16 +69,6 @@ ApplicationWindow {
         onActivated: root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen
     }
 
-    //Shortcut {
-    //    sequence: "Right"
-    //    onActivated: simulator.IncreaseTimeScale()
-    //}
-    //
-    //Shortcut {
-    //    sequence: "Left"
-    //    onActivated: simulator.DecreaseTimeScale()
-    //}
-
     Shortcut {
         sequence: "Up"
         onActivated: flightComputer.ModeTestUp()
@@ -88,47 +78,7 @@ ApplicationWindow {
         sequence: "Down"
         onActivated: flightComputer.ModeTestDown()
     }
-    //
-    //Shortcut {
-    //    sequence: "="
-    //    onActivated: simulator.BatteryTestUp()
-    //}
-    //
-    //Shortcut {
-    //    sequence: "-"
-    //    onActivated: simulator.BatteryTestDown()
-    //}
-    //
-    //Shortcut {
-    //    sequence: "s,0"
-    //    onActivated: simulator.ToggleSensorFault(0)
-    //}
-    //
-    //Shortcut {
-    //    sequence: "s,1"
-    //    onActivated: simulator.ToggleSensorFault(1)
-    //}
-    //
-    //Shortcut {
-    //    sequence: "s,2"
-    //    onActivated: simulator.ToggleSensorFault(2)
-    //}
-    //
-    //Shortcut {
-    //    sequence: "f"
-    //    onActivated: simulator.FailRandomSensor(Math.floor(Math.random() * 3))
-    //}
-    //
-    //Shortcut {
-    //    sequence: "c"
-    //    onActivated: simulator.ToggleChaosMode()
-    //}
-
-    //ScrollView {
-    //    id: readoutsScrollView
-    //    anchors.fill: parent
-    //    anchors.margins: 20
-
+    
     Grid {
         id: readoutGrid
         //width: readoutsScrollView.availableWidth

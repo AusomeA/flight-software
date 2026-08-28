@@ -2,7 +2,7 @@
 #include <SharedTypes.h>
 
 inline constexpr float minTemperatureGoodCelsius = 10.f;    // what temp is still good (minimum)
-inline constexpr float maxTemperatureGoodCelsius = 30.f;    // what temp is still good (maximum)
+inline constexpr float maxTemperatureGoodCelsius = 35.f;    // what temp is still good (maximum)
 inline constexpr float minTemperatureWarningCelsius = 5.f;  // what temp is still just a warning (minimum)
 inline constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is still just a warning (maximum)
 
