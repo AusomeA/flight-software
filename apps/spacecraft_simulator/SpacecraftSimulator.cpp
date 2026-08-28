@@ -241,6 +241,9 @@ SharedTypes::Telemetry SpacecraftSimulator::BuildTelemetry() const
 
 void SpacecraftSimulator::SetHeater(bool enabled)
 {
+    if (enabled && brownedOut_)
+        return;
+
     if (enabled == heaterEnabled_)
         return;
 
@@ -402,7 +405,7 @@ void SpacecraftSimulator::UpdateReadouts()
 
 void SpacecraftSimulator::SendTelemetry()
 {
-    if(blackedOut_)
+    if (blackedOut_)
         return;
 
     telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()),
@@ -411,9 +414,9 @@ void SpacecraftSimulator::SendTelemetry()
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
 {
-    if(blackedOut_)
+    if (blackedOut_)
         return;
-        
+
     std::optional<SharedTypes::Commands> commands = CommandsFromJson(payload);
     if (!commands)
     {
@@ -421,8 +424,11 @@ void SpacecraftSimulator::HandleCommands(const QByteArray &payload)
         return;
     }
     mode_ = commands->mode;
-    payloadEnabled_ = commands->payloadEnabled;
-    commsTransmitting_ = commands->commsTransmitting;
+    if (!brownedOut_)
+    {
+        payloadEnabled_ = commands->payloadEnabled;
+        commsTransmitting_ = commands->commsTransmitting;
+    }
     SetHeater(commands->heaterEnabled);
     timeSinceLastCommand_.restart();
 }
