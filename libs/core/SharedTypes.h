@@ -32,6 +32,11 @@ namespace SharedTypes
     inline constexpr float heaterOnCelsius = 15.f;
     inline constexpr float heaterOffCelsius = 25.f;
 
+    // Battery thresholds
+    inline constexpr float degradedEntryBatteryPercent = 50.f;
+    inline constexpr float safeEntryBatteryPercent = 30.f;
+    inline constexpr float nominalRecoveryBatteryPercent = 60.f;
+
     enum class Mode
     {
         nominal,

@@ -8,9 +8,9 @@ inline constexpr float maxTemperatureWarningCelsius = 36.f; // what temp is stil
 
 inline SharedTypes::Status GetBatteryStatus(float batteryPercentage)
 {
-    if (batteryPercentage > 50.f)
+    if (batteryPercentage > SharedTypes::degradedEntryBatteryPercent)
         return SharedTypes::Status::good;
-    else if (batteryPercentage > 20.f)
+    else if (batteryPercentage > SharedTypes::safeEntryBatteryPercent)
         return SharedTypes::Status::warning;
     else
         return SharedTypes::Status::critical;
