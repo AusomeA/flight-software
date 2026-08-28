@@ -118,3 +118,48 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/protocol
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/networking
 )
+
+
+
+
+################# testing #####################
+include(FetchContent)
+FetchContent_Declare(
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+add_executable(
+    vsat_tests
+    tests/FlightComputerTests.cpp
+    apps/flight_computer/FlightComputer.h
+    apps/flight_computer/FlightComputer.cpp
+    libs/core/SharedTypes.h
+)
+
+target_link_libraries(
+    vsat_tests
+    PRIVATE
+    GTest::gtest_main
+    Qt6::Qml
+    Qt6::Network
+)
+
+target_include_directories(
+    vsat_tests
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
+)
+
+target_compile_features(
+    vsat_tests
+    PRIVATE
+    cxx_std_20
+)
+
+include(GoogleTest)
+gtest_discover_tests(vsat_tests)
