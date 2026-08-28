@@ -153,6 +153,7 @@ target_include_directories(
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/flight_computer
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/protocol
 )
 
 target_compile_features(
