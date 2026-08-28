@@ -258,12 +258,12 @@ void SpacecraftSimulator::BrownoutCheck()
     if (!brownedOut_ && BatteryCalculation() <= brownoutEntryPercent)
     {
         brownedOut_ = true;
-        cout << "Battery depleted" << endl;
+        cout << "Brownout" << endl;
     }
     else if (brownedOut_ && BatteryCalculation() > brownoutRecoveryPercent)
     {
         brownedOut_ = false;
-        cout << "Battery recovered" << endl;
+        cout << "Recovered from Brownout" << endl;
     }
 
     if (brownedOut_)
@@ -289,7 +289,7 @@ void SpacecraftSimulator::BlackoutCheck()
         blackedOut_ = false;
         inCommandFallback_ = false;
         timeSinceLastCommand_.restart();
-        cout << "Recovered from blackout" << endl;
+        cout << "Recovered from Blackout" << endl;
     }
 }
 

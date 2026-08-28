@@ -127,7 +127,6 @@ private:
     static constexpr float louverCoolingCelsius = 10.f;         // how much the radiator cools
 
     // Networking Variables
-    //static constexpr quint16 telemetryPort = 45000;
     static constexpr int telemetrySendIntervalMilliseconds = 200; // 5Hz, subject to change
     
     // Time Scale Variables
@@ -148,7 +147,6 @@ private:
     static constexpr float blackoutRecoveryPercent = 5.f;
     
     // Functions
-
     QTimer updateTimer_;
     QElapsedTimer timeSinceLastCommand_;
     bool inCommandFallback_;                // true when we have lost contact with the flight computer
