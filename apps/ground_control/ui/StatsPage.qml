@@ -2,14 +2,10 @@ import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
 import QtQuick.Layouts
-import FlightComputer
+import GroundControl
 
-ApplicationWindow {
-    id: root
-
-    FlightComputerShell {
-        id: flightComputer
-    }
+Page {
+    id: statsPage
 
     function statusColor(status) {
         switch (status) {
@@ -26,70 +22,56 @@ ApplicationWindow {
         }
     }
 
-    function toggleFullScreen() {
-        root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen;
+    ListModel {
+        id: placeholderListModel
+        ListElement {
+            label: "Link"
+            value: "No Link"
+            status: 2
+        }
+        ListElement {
+            label: "Mode"
+            value: "N/A"
+            status: 0
+        }
+        ListElement {
+            label: "Battery"
+            value: "100%"
+            status: 1
+        }
+        ListElement {
+            label: "Temp"
+            value: "-----"
+            status: 3
+        }
+        ListElement {
+            label: "Something"
+            value: "Else"
+            status: 4
+        }
     }
 
-    visible: true
-    visibility: Window.FullScreen
-    width: Screen.width / 2
-    height: Screen.height - 20
-
-    x: 0
-    y: 0
-
-    title: "Flight Computer"
-
-    color: "black"
+    background: Rectangle {
+        color: "black"
+    }
 
     readonly property int readoutRowCount: Math.max(1, Math.ceil(readoutRepeater.count / 2))
     readonly property int rowHeight: Math.floor(readoutGrid.height / readoutRowCount)
     readonly property int baseFontSize: Math.round(rowHeight * 0.45)
     readonly property int cellPadding: Math.round(baseFontSize * 0.5)
 
-    MouseArea {
-        width: 80
-        height: 80
-        anchors.top: parent.top
-        anchors.right: parent.right
-        onPressAndHold: Qt.quit()    // fires after holding ~0.8 s
-    }
-
-    MouseArea {
-        width: 80
-        height: 80
-        anchors.top: parent.top
-        anchors.left: parent.left
-        onPressAndHold: root.toggleFullScreen()
-    }
-
-    // Esc Key exits full screen mode and returns to windowed mode, or vice versa
-    Shortcut {
-        sequence: "Esc"
-        onActivated: root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen
-    }
-
-    Shortcut {
-        sequence: "Up"
-        onActivated: flightComputer.ModeTestUp()
-    }
-
-    Shortcut {
-        sequence: "Down"
-        onActivated: flightComputer.ModeTestDown()
-    }
-
     Grid {
         id: readoutGrid
         anchors.fill: parent
         anchors.margins: 10
+        anchors.bottomMargin: 100
         columns: 2
         rowSpacing: 0
         columnSpacing: 10
 
         Repeater {
             id: readoutRepeater
-            model: flightComputer.readoutsModel
+            model: placeholderListModel
 
             delegate: RowLayout {
                 id: readoutRow
@@ -147,5 +129,15 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    Button {
+        text: "Back"
+        width: 120
+        height: 60
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: 20
+        onClicked: statsPage.StackView.view.pop()
     }
 }

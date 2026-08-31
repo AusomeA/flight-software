@@ -15,6 +15,7 @@ namespace SharedTypes
     static constexpr int discoveryIntervalMilliseconds = 1000;
     inline const QString simulatorName = "spacecraft_simulator";
     inline const QString flightComputerName = "flight_computer";
+    inline const QString groundControlName = "ground_control";
 
     // Orbit times
     inline constexpr float orbitPeriodSeconds = 5400.f;

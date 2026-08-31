@@ -124,7 +124,59 @@ target_include_directories(
 )
 
 
+################### Ground Control ###########################
+qt_add_executable(
+    ground_control
+    apps/ground_control/main.cpp
+    apps/ground_control/GroundControl.h
+    apps/ground_control/GroundControl.cpp
+    libs/core/SharedTypes.h
+    libs/ui/ReadoutsModel.h
+    libs/ui/ReadoutsModel.cpp
+    libs/ui/ReadoutFormatting.h
+    libs/core/Helpers.h
+    libs/networking/UdpReceiver.h
+    libs/networking/UdpReceiver.cpp
+    libs/protocol/TelemetryJson.h
+    libs/core/Discovery.h
+    libs/core/Discovery.cpp
+)
 
+qt_add_qml_module(
+    ground_control
+
+    URI GroundControl
+    VERSION 0.1
+
+    QML_FILES
+    apps/ground_control/ui/Main.qml
+    apps/ground_control/ui/HomePage.qml
+    apps/ground_control/ui/StatsPage.qml
+)
+
+target_link_libraries(
+    ground_control
+    PRIVATE
+    Qt6::Quick
+    Qt6::Qml
+    Qt6::Network
+)
+
+target_compile_features(
+    ground_control
+    PRIVATE
+    cxx_std_20
+)
+
+target_include_directories(
+    ground_control
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/ground_control
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/core
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/ui
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/protocol
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/networking
+)
 
 ################# testing #####################
 include(FetchContent)
