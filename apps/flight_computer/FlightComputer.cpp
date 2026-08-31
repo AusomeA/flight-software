@@ -98,7 +98,7 @@ void FlightComputer::PayloadCheck()
     if (!payloadEnabled_)
     {
         float timeInOrbit = TimeIntoOrbit();
-        if (timeInOrbit >= SharedTypes::payloadStartTime && timeInOrbit <= SharedTypes::payloadEndTime && telemetry_.batteryPercent > minPayloadBatteryPercent)
+        if (timeInOrbit >= SharedTypes::payloadStartTime && timeInOrbit <= SharedTypes::payloadEndTime)
         {
             payloadEnabled_ = true;
             cout << "Payload Enabled" << endl;

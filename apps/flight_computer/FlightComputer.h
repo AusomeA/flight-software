@@ -27,8 +27,6 @@ private:
 
     static constexpr float minSecondsUntilSunrise = SharedTypes::eclipseSeconds / 3.f; // no need to go to safe mode on low battery if sun is about to rise
 
-    static constexpr float minPayloadBatteryPercent = 30.f;
-
     static constexpr float minCommsBatteryPercent = 10.f;
 
     void ModeCheck();
