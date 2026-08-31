@@ -9,6 +9,7 @@
 #include "FlightComputer.h"
 #include "ReadoutsModel.h"
 #include "UdpReceiver.h"
+#include "Discovery.h"
 
 enum FCReadoutRowIndex
 {
@@ -51,6 +52,8 @@ Q_OBJECT
     UdpReceiver receiver_;
     QUdpSocket commandSocket_;
     QHostAddress simulatorAddress_;
+
+    Discovery discovery_{SharedTypes::flightComputerName, SharedTypes::simulatorName};
 
     QTimer linkCheckTimer_;
     QElapsedTimer timeSinceLastPacket_;

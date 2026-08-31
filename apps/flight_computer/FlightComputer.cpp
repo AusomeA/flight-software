@@ -16,7 +16,7 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
 {
     telemetry_ = telemetry;
 
-    if(lastGroundContactSeconds_ < 0.0)
+    if (lastGroundContactSeconds_ < 0.0)
         lastGroundContactSeconds_ = telemetry_.missionElapsedTimeSeconds;
 
     if (telemetry_.communicationsAvailable && telemetry_.commsTransmitting)
@@ -196,8 +196,6 @@ void FlightComputer::HeaterCheck()
         cout << "Heater commanded off" << endl;
     }
 }
-
-
 
 /////////////////////////////////// Testing Functions /////////////////////////////////////////////////
 void FlightComputer::ModeTestUp()

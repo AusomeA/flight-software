@@ -10,6 +10,11 @@ namespace SharedTypes
 
     inline constexpr quint16 telemetryPort  = 45000;
     inline constexpr quint16 commandPort    = 45001;
+    inline constexpr quint16 discoveryPort  = 45010;
+
+    static constexpr int discoveryIntervalMilliseconds = 1000;
+    inline const QString simulatorName = "spacecraft_simulator";
+    inline const QString flightComputerName = "flight_computer";
 
     // Orbit times
     inline constexpr float orbitPeriodSeconds = 5400.f;

@@ -17,7 +17,7 @@ private:
     SharedTypes::Mode mode_;
     bool payloadEnabled_;
     bool commsTransmitting_;
-    bool heaterEnabled_;        // FC's own last-commanded state - deliberately NOT read from telemetry
+    bool heaterEnabled_; // FC's own last-commanded state - deliberately NOT read from telemetry
 
     SharedTypes::Telemetry telemetry_;
 

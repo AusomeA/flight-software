@@ -30,6 +30,8 @@ qt_add_executable(
     libs/protocol/TelemetryJson.h
     libs/networking/UdpReceiver.h
     libs/networking/UdpReceiver.cpp
+    libs/core/Discovery.h
+    libs/core/Discovery.cpp
 )
 
 
@@ -83,6 +85,8 @@ qt_add_executable(
     libs/networking/UdpReceiver.h
     libs/networking/UdpReceiver.cpp
     libs/protocol/TelemetryJson.h
+    libs/core/Discovery.h
+    libs/core/Discovery.cpp
 )
 
 qt_add_qml_module(

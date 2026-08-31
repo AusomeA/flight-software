@@ -1,4 +1,8 @@
 #pragma once
+#include "SharedTypes.h"
+#include "ReadoutsModel.h"
+#include "UdpReceiver.h"
+#include "Discovery.h"
 #include <QObject>
 #include <QQmlEngine>
 #include <QTimer>
@@ -6,9 +10,6 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 #include <QElapsedTimer>
-#include "SharedTypes.h"
-#include "ReadoutsModel.h"
-#include "UdpReceiver.h"
 
 enum ReadoutRowIndex
 {
@@ -108,6 +109,8 @@ private:
     QTimer telemetrySendTimer_;
     
     ReadoutsModel readoutsModel_;
+
+    Discovery discovery_{SharedTypes::simulatorName, SharedTypes::flightComputerName};
     
     // Power Consumption Variables
     static constexpr float basePowerConsumption = 5.f; // how much power is consumed, even in safe mode

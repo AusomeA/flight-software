@@ -43,6 +43,7 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
     connect(&commandReceiver_, &UdpReceiver::DatagramReceived, this, &SpacecraftSimulator::HandleCommands);
+    connect(&discovery_, &Discovery::peerDiscovered, this, [this](QHostAddress address) {flightComputerAddress_ = address;});
     telemetrySendTimer_.start(telemetrySendIntervalMilliseconds);
 
     const QStringList arguments = QCoreApplication::arguments();
