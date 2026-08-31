@@ -7,7 +7,7 @@ import FlightComputer
 ApplicationWindow {
     id: root
 
-    FlightComputerUI {
+    FlightComputerShell {
         id: flightComputer
     }
 

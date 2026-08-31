@@ -31,13 +31,13 @@ enum FCReadoutRowIndex
     readoutRowCount
 };
 
-class FlightComputerUI : public QObject {
+class FlightComputerShell : public QObject {
 Q_OBJECT
-    QML_NAMED_ELEMENT(FlightComputerUI)
+    QML_NAMED_ELEMENT(FlightComputerShell)
     Q_PROPERTY(QAbstractItemModel *readoutsModel READ ReadoutsModelPtr CONSTANT)
 
     public:
-    FlightComputerUI(QObject *parent = nullptr);
+    FlightComputerShell(QObject *parent = nullptr);
 
     QAbstractItemModel *ReadoutsModelPtr() {return &readoutsModel_;}
 
@@ -55,7 +55,6 @@ Q_OBJECT
     QTimer linkCheckTimer_;
     QElapsedTimer timeSinceLastPacket_;
 
-    //static constexpr int linkLostMilliseconds = 3000;
     static constexpr int linkCheckIntervalMilliseconds = 200;
 
     void HandleTelemetry(const QByteArray &payload);

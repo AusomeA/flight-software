@@ -1,19 +1,19 @@
-#include "FlightComputerUI.h"
+#include "FlightComputerShell.h"
 #include "ReadoutFormatting.h"
 #include "Helpers.h"
 #include "TelemetryJson.h"
 #include <QCoreApplication>
 
-FlightComputerUI::FlightComputerUI(QObject *parent)
+FlightComputerShell::FlightComputerShell(QObject *parent)
     : QObject(parent),
       receiver_(SharedTypes::telemetryPort),
       simulatorAddress_(QHostAddress::LocalHost)
 {
     PopulateRows();
-    connect(&receiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerUI::HandleTelemetry);
+    connect(&receiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerShell::HandleTelemetry);
 
     timeSinceLastPacket_.start();
-    connect(&linkCheckTimer_, &QTimer::timeout, this, &FlightComputerUI::UpdateLinkRow);
+    connect(&linkCheckTimer_, &QTimer::timeout, this, &FlightComputerShell::UpdateLinkRow);
     linkCheckTimer_.start(linkCheckIntervalMilliseconds);
 
     const QStringList arguments = QCoreApplication::arguments();
@@ -25,7 +25,7 @@ FlightComputerUI::FlightComputerUI(QObject *parent)
     }
 }
 
-void FlightComputerUI::PopulateRows()
+void FlightComputerShell::PopulateRows()
 {
     readoutsModel_.SetRows({
         {"Link", "", 0},
@@ -47,7 +47,7 @@ void FlightComputerUI::PopulateRows()
     });
 }
 
-void FlightComputerUI::UpdateRows(bool stale)
+void FlightComputerShell::UpdateRows(bool stale)
 {
     const SharedTypes::Telemetry &telemetry = flightComputer_.GetTelemetry();
 
@@ -74,7 +74,7 @@ void FlightComputerUI::UpdateRows(bool stale)
     readoutsModel_.UpdateRow(payloadRow, telemetry.payloadEnabled ? "Yes" : "No", rowStatus(telemetry.payloadEnabled ? SharedTypes::Status::good : SharedTypes::Status::none));
 }
 
-void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
+void FlightComputerShell::HandleTelemetry(const QByteArray &payload)
 {
     std::optional<SharedTypes::Telemetry> telemetry = TelemetryFromJson(payload);
     if(!telemetry)
@@ -88,7 +88,7 @@ void FlightComputerUI::HandleTelemetry(const QByteArray &payload)
     UpdateRows();
 }
 
-void FlightComputerUI::UpdateLinkRow()
+void FlightComputerShell::UpdateLinkRow()
 {
     const qint64 silentMillisecond = timeSinceLastPacket_.elapsed();
     const bool linkLost = silentMillisecond > SharedTypes::linkLostMilliseconds;
