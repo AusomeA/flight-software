@@ -24,7 +24,11 @@ FlightComputerShell::FlightComputerShell(QObject *parent)
             qFatal("Invalid address argument: %s", qPrintable(arguments[1]));
     }
 
-    connect(&discovery_, &Discovery::peerDiscovered, this, [this](QHostAddress address){simulatorAddress_ = address;});
+    connect(&discovery_, &Discovery::peerAppeared, this, [this](const QString &appName, const QHostAddress &address) {
+        if (appName == SharedTypes::simulatorName) {
+            simulatorAddress_ = address;
+        }
+    });
 }
 
 void FlightComputerShell::PopulateRows()

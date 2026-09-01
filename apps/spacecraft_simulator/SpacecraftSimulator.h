@@ -110,7 +110,7 @@ private:
     
     ReadoutsModel readoutsModel_;
 
-    Discovery discovery_{SharedTypes::simulatorName, SharedTypes::flightComputerName};
+    Discovery discovery_{SharedTypes::simulatorName, SharedTypes::defaultVehicleName};
     
     // Power Consumption Variables
     static constexpr float basePowerConsumption = 5.f; // how much power is consumed, even in safe mode

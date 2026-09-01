@@ -16,6 +16,7 @@ namespace SharedTypes
     inline const QString simulatorName = "spacecraft_simulator";
     inline const QString flightComputerName = "flight_computer";
     inline const QString groundControlName = "ground_control";
+    inline const QString defaultVehicleName = "vsat-1";
 
     // Orbit times
     inline constexpr float orbitPeriodSeconds = 5400.f;

@@ -53,7 +53,7 @@ Q_OBJECT
     QUdpSocket commandSocket_;
     QHostAddress simulatorAddress_;
 
-    Discovery discovery_{SharedTypes::flightComputerName, SharedTypes::simulatorName};
+    Discovery discovery_{SharedTypes::flightComputerName, SharedTypes::defaultVehicleName};
 
     QTimer linkCheckTimer_;
     QElapsedTimer timeSinceLastPacket_;
