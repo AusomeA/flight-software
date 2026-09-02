@@ -497,7 +497,10 @@ void SpacecraftSimulator::HandleFaultInjection(const QByteArray &payload, const 
 
 bool SpacecraftSimulator::ApplyFaultInjection(const QString &faultName, bool active)
 {
+    cout << "Received fault injection request: " << faultName.toStdString() << " active=" << (active ? "true" : "false") << endl;
+    
     const bool healthy = !active;
+
     if(faultName == SharedTypes::temperatureSensorFaultMessage)
         temperatureSensorHealthy_ = healthy;
     else if(faultName == SharedTypes::powerSensorFaultMessage)
@@ -505,7 +508,10 @@ bool SpacecraftSimulator::ApplyFaultInjection(const QString &faultName, bool act
     else if(faultName == SharedTypes::attitudeSensorFaultMessage)
         attitudeSensorHealthy_ = healthy;
     else
+    {
+        cout << "Rejected unknown fault injection request: " << faultName.toStdString() << endl;
         return false;
+    }
 
     cout << faultName.toStdString() << " set to " << (healthy ? "healthy" : "faulty") << endl;
     return true;
