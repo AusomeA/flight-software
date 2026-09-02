@@ -1,6 +1,7 @@
 #pragma once
 #include <QObject>
 #include <QUdpSocket>
+#include <QHostAddress>
 
 class UdpReceiver : public QObject
 {
@@ -10,7 +11,7 @@ class UdpReceiver : public QObject
     UdpReceiver(quint16 port, QObject *parent = nullptr);
 
     signals:
-    void DatagramReceived(const QByteArray &payload);
+    void DatagramReceived(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort);
 
     private:
     QUdpSocket socket_;

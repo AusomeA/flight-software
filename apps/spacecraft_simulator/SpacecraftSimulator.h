@@ -104,6 +104,7 @@ private:
 
     QUdpSocket telemetrySocket_;
     UdpReceiver commandReceiver_;
+    UdpReceiver faultReceiver_;
     QHostAddress flightComputerAddress_;
 
     QTimer telemetrySendTimer_;
@@ -176,4 +177,6 @@ private:
     void SendTelemetry();
 
     void HandleCommands(const QByteArray &payload);
+    void HandleFaultInjection(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort);
+    bool ApplyFaultInjection(const QString &faultName, bool active);
 };

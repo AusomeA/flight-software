@@ -17,6 +17,7 @@ void UdpReceiver::HandleReadyRead()
 {
     while(socket_.hasPendingDatagrams())
     {
-        emit DatagramReceived(socket_.receiveDatagram().data());
+        QNetworkDatagram datagram = socket_.receiveDatagram();
+        emit DatagramReceived(datagram.data(), datagram.senderAddress(), datagram.senderPort());
     }
 }

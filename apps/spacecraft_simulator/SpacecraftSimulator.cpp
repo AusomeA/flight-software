@@ -2,6 +2,7 @@
 #include "ReadoutFormatting.h"
 #include "Helpers.h"
 #include "TelemetryJson.h"
+#include "EnvelopeJson.h"
 #include <iostream>
 #include <QTime>
 #include <cmath>
@@ -15,6 +16,7 @@ using namespace std;
 SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     : QObject(parent),
       commandReceiver_(SharedTypes::simCommandPort),
+      faultReceiver_(SharedTypes::godPort),
       flightComputerAddress_(QHostAddress::LocalHost),
       mode_(SharedTypes::Mode::nominal),
       isRunning_(false),
@@ -471,4 +473,40 @@ void SpacecraftSimulator::ToggleChaosMode()
 {
     chaosEnabled_ = !chaosEnabled_;
     cout << "Chaos mode " << (chaosEnabled_ ? "on" : "off") << endl;
+}
+
+void SpacecraftSimulator::HandleFaultInjection(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort)
+{
+    std::optional<Envelope> envelope = EnvelopeFromJson(payload);
+    if (!envelope || envelope->type != SharedTypes::faultInjectionMessageType)
+    {
+        qWarning() << "Dropped malformed fault injection packet";
+        return;
+    }
+
+    const QString faultName = envelope->body["fault"].toString();
+    const bool active = envelope->body["active"].toBool();
+    const bool accepted = ApplyFaultInjection(faultName, active);
+
+    Envelope ackEnvelope;
+    ackEnvelope.type = SharedTypes::ackMessageType;
+    ackEnvelope.sequence = envelope->sequence;
+    ackEnvelope.body["accepted"] = accepted;
+    telemetrySocket_.writeDatagram(EnvelopeToJson(ackEnvelope), senderAddress, senderPort);
+}
+
+bool SpacecraftSimulator::ApplyFaultInjection(const QString &faultName, bool active)
+{
+    const bool healthy = !active;
+    if(faultName == SharedTypes::temperatureSensorFaultMessage)
+        temperatureSensorHealthy_ = healthy;
+    else if(faultName == SharedTypes::powerSensorFaultMessage)
+        powerSensorHealthy_ = healthy;
+    else if(faultName == SharedTypes::attitudeSensorFaultMessage)
+        attitudeSensorHealthy_ = healthy;
+    else
+        return false;
+
+    cout << faultName.toStdString() << " set to " << (healthy ? "healthy" : "faulty") << endl;
+    return true;
 }

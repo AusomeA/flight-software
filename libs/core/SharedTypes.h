@@ -52,6 +52,11 @@ namespace SharedTypes
     inline const QString faultInjectionMessageType = "faultInjection";
     inline const QString ackMessageType = "ack";
 
+    // fault messages
+    inline const QString temperatureSensorFaultMessage = "temperatureSensorFault";
+    inline const QString powerSensorFaultMessage = "powerSensorFault";
+    inline const QString attitudeSensorFaultMessage = "attitudeSensorFault";
+
     enum class Mode
     {
         nominal,
