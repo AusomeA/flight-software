@@ -1,9 +1,14 @@
 import QtQuick
 import QtQuick.Window
 import QtQuick.Controls
+import GroundControl
 
 ApplicationWindow {
     id: root
+
+    GroundControl {
+        id: groundControl
+    }
 
     function toggleFullScreen() {
         root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen;

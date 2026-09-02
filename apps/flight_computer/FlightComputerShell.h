@@ -10,26 +10,13 @@
 #include "ReadoutsModel.h"
 #include "UdpReceiver.h"
 #include "Discovery.h"
+#include "TelemetryReadouts.h"
 
 enum FCReadoutRowIndex
 {
     linkRow,
     modeRow,
-    METRow,
-    batteryRow,
-    solarGenerationRow,
-    powerConsumptionRow,
-    temperatureRow,
-    heaterRow,
-    radiatorRow,
-    sunlightRow,
-    commsRow,
-    commsTransmittingRow,
-    temperatureSensorRow,
-    powerSensorRow,
-    attitudeSensorRow,
-    payloadRow,
-    readoutRowCount
+    fcHeaderRowCount
 };
 
 class FlightComputerShell : public QObject {

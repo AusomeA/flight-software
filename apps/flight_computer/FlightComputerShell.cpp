@@ -3,6 +3,7 @@
 #include "Helpers.h"
 #include "TelemetryJson.h"
 #include "EnvelopeJson.h"
+#include "TelemetryReadouts.h"
 #include <QCoreApplication>
 
 FlightComputerShell::FlightComputerShell(QObject *parent)
@@ -34,51 +35,19 @@ FlightComputerShell::FlightComputerShell(QObject *parent)
 
 void FlightComputerShell::PopulateRows()
 {
-    readoutsModel_.SetRows({
+    readoutsModel_.SetRows(QVector<ReadoutRow>{
         {"Link", "", 0},
         {"Mode", "", 0},
-        {"MET", "", 0},
-        {"Battery", "", 0},
-        {"Solar Generation", "", 0},
-        {"Power Consumption", "", 0},
-        {"Temperature", "", 0},
-        {"Heater", "", 0},
-        {"Radiator Louvers", "", 0},
-        {"In Sunlight", "", 0},
-        {"Comms Available", "", 0},
-        {"Comms Transmitting", "", 0},
-        {"Temp Sensor OK", "", 0},
-        {"Power Sensor OK", "", 0},
-        {"Attitude Sensor OK", "", 0},
-        {"Payload Enabled", "", 0},
-    });
+    } + TelemetryReadouts());
 }
 
 void FlightComputerShell::UpdateRows(bool stale)
 {
-    const SharedTypes::Telemetry &telemetry = flightComputer_.GetTelemetry();
-
-    auto rowStatus = [stale] (SharedTypes::Status status)                           // helper lambda
-    { return static_cast<int>(stale ? SharedTypes::Status::stale : status);};
+    const SharedTypes::Mode mode = flightComputer_.GetMode();
+    const int modeStatus = static_cast<int>(stale ? SharedTypes::Status::stale : GetModeStatus(mode));
     
-    readoutsModel_.UpdateRow(modeRow, flightComputer_.GetMode() == SharedTypes::Mode::nominal ? "Nominal" : flightComputer_.GetMode() == SharedTypes::Mode::degraded ? "Degraded" : "Safe", 
-                                        rowStatus(flightComputer_.GetMode() == SharedTypes::Mode::nominal ? SharedTypes::Status::good 
-                                            : flightComputer_.GetMode() == SharedTypes::Mode::degraded ? SharedTypes::Status::warning
-                                            : SharedTypes::Status::critical));
-    readoutsModel_.UpdateRow(METRow, MissionElapsedTimeText(telemetry.missionElapsedTimeSeconds), rowStatus(SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(batteryRow, QString("%1 %").arg(telemetry.batteryPercent, 0, 'f', 1), rowStatus(GetBatteryStatus(telemetry.batteryPercent)));
-    readoutsModel_.UpdateRow(solarGenerationRow, QString("%1 W").arg(telemetry.solarGenerationWatts, 0, 'f', 1), rowStatus(GetSolarGenerationStatus(telemetry.solarGenerationWatts, telemetry.isInSunlight)));
-    readoutsModel_.UpdateRow(powerConsumptionRow, QString("%1 W").arg(telemetry.powerConsumptionWatts, 0, 'f', 1), rowStatus(GetPowerConsumptionStatus(telemetry.powerConsumptionWatts)));
-    readoutsModel_.UpdateRow(temperatureRow, QString("%1 C").arg(telemetry.temperatureCelsius, 0, 'f', 1), rowStatus(GetTemperatureStatus(telemetry.temperatureCelsius)));
-    readoutsModel_.UpdateRow(heaterRow, telemetry.heaterEnabled ? "On" : "Off", rowStatus(SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(radiatorRow, telemetry.radiatorLouversOpen ? "Open" : "Shut", rowStatus(SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(sunlightRow, telemetry.isInSunlight ? "Yes" : "No", rowStatus(telemetry.isInSunlight ? SharedTypes::Status::good : SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(commsRow, telemetry.communicationsAvailable ? "Yes" : "No", rowStatus(telemetry.communicationsAvailable ? SharedTypes::Status::good : SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(commsTransmittingRow, telemetry.commsTransmitting ? "Yes" : "No", rowStatus(telemetry.commsTransmitting ? SharedTypes::Status::good : SharedTypes::Status::none));
-    readoutsModel_.UpdateRow(temperatureSensorRow, telemetry.temperatureSensorHealthy ? "Yes" : "No", rowStatus(telemetry.temperatureSensorHealthy ? SharedTypes::Status::good : SharedTypes::Status::critical));
-    readoutsModel_.UpdateRow(powerSensorRow, telemetry.powerSensorHealthy ? "Yes" : "No", rowStatus(telemetry.powerSensorHealthy ? SharedTypes::Status::good : SharedTypes::Status::critical));
-    readoutsModel_.UpdateRow(attitudeSensorRow, telemetry.attitudeSensorHealthy ? "Yes" : "No", rowStatus(telemetry.attitudeSensorHealthy ? SharedTypes::Status::good : SharedTypes::Status::critical));
-    readoutsModel_.UpdateRow(payloadRow, telemetry.payloadEnabled ? "Yes" : "No", rowStatus(telemetry.payloadEnabled ? SharedTypes::Status::good : SharedTypes::Status::none));
+    readoutsModel_.UpdateRow(modeRow, ModeText(mode), modeStatus);
+    UpdateTelemetryReadouts(readoutsModel_, flightComputer_.GetTelemetry(), fcHeaderRowCount, stale);
 }
 
 void FlightComputerShell::HandleTelemetry(const QByteArray &payload)

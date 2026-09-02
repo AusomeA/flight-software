@@ -9,19 +9,17 @@ inline const QStringList requiredTelemetryKeys = {
     "powerConsumptionWatts", "temperatureCelsius", "heaterEnabled",
     "radiatorLouversOpen", "isInSunlight", "temperatureSensorHealthy",
     "powerSensorHealthy", "attitudeSensorHealthy", "communicationsAvailable",
-    "commsTransmitting", "payloadEnabled", "secondsUntilSunrise"
-};
+    "commsTransmitting", "payloadEnabled", "secondsUntilSunrise"};
 
 inline const QStringList requiredCommandKeys = {
-    "mode", "payloadEnabled", "commsTransmitting", "heaterEnabled"
-};
+    "mode", "payloadEnabled", "commsTransmitting", "heaterEnabled"};
 
 inline bool HasAllKeys(const QJsonObject &json, const QStringList &requiredKeys)
 {
     for (const QString &key : requiredKeys)
-        if(!json.contains(key))
+        if (!json.contains(key))
             return false;
-    
+
     return true;
 }
 
@@ -44,7 +42,7 @@ inline QJsonObject TelemetryToJsonObject(const SharedTypes::Telemetry &telemetry
     json["payloadEnabled"] = telemetry.payloadEnabled;
     json["secondsUntilSunrise"] = telemetry.secondsUntilSunrise;
 
-    return json; 
+    return json;
 }
 
 inline QByteArray TelemetryToJson(const SharedTypes::Telemetry &telemetry)
@@ -52,16 +50,9 @@ inline QByteArray TelemetryToJson(const SharedTypes::Telemetry &telemetry)
     return QJsonDocument(TelemetryToJsonObject(telemetry)).toJson(QJsonDocument::Compact);
 }
 
-inline std::optional<SharedTypes::Telemetry> TelemetryFromJson(const QByteArray &payload)
+inline std::optional<SharedTypes::Telemetry> TelemetryFromJsonObject(const QJsonObject &json)
 {
-    QJsonParseError parseError;
-    QJsonDocument document = QJsonDocument::fromJson(payload, &parseError);
-    if (parseError.error != QJsonParseError::NoError || !document.isObject())
-        return std::nullopt;
-
-    QJsonObject json = document.object();
-
-    if(!HasAllKeys(json, requiredTelemetryKeys))
+    if (!HasAllKeys(json, requiredTelemetryKeys))
         return std::nullopt;
 
     SharedTypes::Telemetry telemetry;
@@ -83,6 +74,16 @@ inline std::optional<SharedTypes::Telemetry> TelemetryFromJson(const QByteArray 
     telemetry.secondsUntilSunrise = json["secondsUntilSunrise"].toDouble();
 
     return telemetry;
+}
+
+inline std::optional<SharedTypes::Telemetry> TelemetryFromJson(const QByteArray &payload)
+{
+    QJsonParseError parseError;
+    QJsonDocument document = QJsonDocument::fromJson(payload, &parseError);
+    if (parseError.error != QJsonParseError::NoError || !document.isObject())
+        return std::nullopt;
+
+    return TelemetryFromJsonObject(document.object());
 }
 
 inline QByteArray CommandsToJson(const SharedTypes::Commands &commands)
@@ -108,7 +109,7 @@ inline std::optional<SharedTypes::Commands> CommandsFromJson(const QByteArray &p
         return std::nullopt;
 
     const int modeNumber = json["mode"].toInt(-1);
-    if(modeNumber < 0 || modeNumber > static_cast<int>(SharedTypes::Mode::safe))
+    if (modeNumber < 0 || modeNumber > static_cast<int>(SharedTypes::Mode::safe))
         return std::nullopt;
 
     SharedTypes::Commands commands;

@@ -87,6 +87,7 @@ qt_add_executable(
     libs/protocol/TelemetryJson.h
     libs/core/Discovery.h
     libs/core/Discovery.cpp
+    libs/ui/TelemetryReadouts.h
 )
 
 qt_add_qml_module(
@@ -140,6 +141,8 @@ qt_add_executable(
     libs/protocol/TelemetryJson.h
     libs/core/Discovery.h
     libs/core/Discovery.cpp
+    libs/ui/TelemetryReadouts.h
+    libs/protocol/EnvelopeJson.h
 )
 
 qt_add_qml_module(

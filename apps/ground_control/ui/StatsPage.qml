@@ -22,35 +22,6 @@ Page {
         }
     }
 
-    ListModel {
-        id: placeholderListModel
-        ListElement {
-            label: "Link"
-            value: "No Link"
-            status: 2
-        }
-        ListElement {
-            label: "Mode"
-            value: "N/A"
-            status: 0
-        }
-        ListElement {
-            label: "Battery"
-            value: "100%"
-            status: 1
-        }
-        ListElement {
-            label: "Temp"
-            value: "-----"
-            status: 3
-        }
-        ListElement {
-            label: "Something"
-            value: "Else"
-            status: 4
-        }
-    }
-
     background: Rectangle {
         color: "black"
     }
@@ -71,7 +42,7 @@ Page {
 
         Repeater {
             id: readoutRepeater
-            model: placeholderListModel
+            model: groundControl.readoutsModel
 
             delegate: RowLayout {
                 id: readoutRow
