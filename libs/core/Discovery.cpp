@@ -65,7 +65,7 @@ void Discovery::ReadPendingDatagrams()
 
         if (isNewInstance || addressChanged)
         {
-            cout << "Discovered" << appName.toStdString() << " at " << peer.address.toString().toStdString() << endl;
+            cout << "Discovered " << appName.toStdString() << " at " << peer.address.toString().toStdString() << endl;
             emit peerAppeared(appName, peer.address);
         }
     }

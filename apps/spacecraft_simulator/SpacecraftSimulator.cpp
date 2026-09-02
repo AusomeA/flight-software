@@ -14,7 +14,7 @@ using namespace std;
 
 SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     : QObject(parent),
-      commandReceiver_(SharedTypes::commandPort),
+      commandReceiver_(SharedTypes::simCommandPort),
       flightComputerAddress_(QHostAddress::LocalHost),
       mode_(SharedTypes::Mode::nominal),
       isRunning_(false),
@@ -382,7 +382,7 @@ void SpacecraftSimulator::SendTelemetry()
         return;
 
     telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()),
-                                   flightComputerAddress_, SharedTypes::telemetryPort); // local host changes when we move to pi's
+                                   flightComputerAddress_, SharedTypes::simTelemetryPort); // local host changes when we move to pi's
 }
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)

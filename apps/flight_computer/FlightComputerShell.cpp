@@ -6,7 +6,7 @@
 
 FlightComputerShell::FlightComputerShell(QObject *parent)
     : QObject(parent),
-      receiver_(SharedTypes::telemetryPort),
+      receiver_(SharedTypes::simTelemetryPort),
       simulatorAddress_(QHostAddress::LocalHost)
 {
     PopulateRows();
@@ -90,7 +90,7 @@ void FlightComputerShell::HandleTelemetry(const QByteArray &payload)
     }
     timeSinceLastPacket_.restart();
     SharedTypes::Commands commands = flightComputer_.Update(*telemetry);
-    commandSocket_.writeDatagram(CommandsToJson(commands), simulatorAddress_, SharedTypes::commandPort);         // Local Host will change later
+    commandSocket_.writeDatagram(CommandsToJson(commands), simulatorAddress_, SharedTypes::simCommandPort);         // Local Host will change later
     UpdateRows();
 }
 
