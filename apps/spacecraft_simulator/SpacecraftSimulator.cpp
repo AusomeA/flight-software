@@ -45,6 +45,7 @@ SpacecraftSimulator::SpacecraftSimulator(QObject *parent)
     connect(&updateTimer_, &QTimer::timeout, this, &SpacecraftSimulator::AdvanceOneTick);
     connect(&telemetrySendTimer_, &QTimer::timeout, this, &SpacecraftSimulator::SendTelemetry);
     connect(&commandReceiver_, &UdpReceiver::DatagramReceived, this, &SpacecraftSimulator::HandleCommands);
+    connect(&faultReceiver_, &UdpReceiver::DatagramReceived, this, &SpacecraftSimulator::HandleFaultInjection);
     connect(&discovery_, &Discovery::peerAppeared, this, [this](const QString &appName, const QHostAddress &address) 
     {
         if(appName == SharedTypes::flightComputerName)
@@ -498,7 +499,7 @@ void SpacecraftSimulator::HandleFaultInjection(const QByteArray &payload, const 
 bool SpacecraftSimulator::ApplyFaultInjection(const QString &faultName, bool active)
 {
     cout << "Received fault injection request: " << faultName.toStdString() << " active=" << (active ? "true" : "false") << endl;
-    
+
     const bool healthy = !active;
 
     if(faultName == SharedTypes::temperatureSensorFaultMessage)
