@@ -8,12 +8,12 @@ namespace SharedTypes
     Q_NAMESPACE
     QML_ELEMENT
 
-    inline constexpr quint16 simTelemetryPort       = 45000; // sim->FC
-    inline constexpr quint16 simCommandPort         = 45001; // FC->sim
-    inline constexpr quint16 groundTelemetryPort    = 45002; // fc->gc
-    inline constexpr quint16 groundCommandPort      = 45003; // gc->fc
-    inline constexpr quint16 godPort                = 45004; // gc->sim, god mode port for fault injection
-    inline constexpr quint16 discoveryPort          = 45010; // find peers on the network
+    inline constexpr quint16 simTelemetryPort = 45000;    // sim->FC
+    inline constexpr quint16 simCommandPort = 45001;      // FC->sim
+    inline constexpr quint16 groundTelemetryPort = 45002; // fc->gc
+    inline constexpr quint16 groundCommandPort = 45003;   // gc->fc
+    inline constexpr quint16 godPort = 45004;             // gc->sim, god mode port for fault injection
+    inline constexpr quint16 discoveryPort = 45010;       // find peers on the network
 
     static constexpr int discoveryIntervalMilliseconds = 1000;
     inline const QString simulatorName = "spacecraft_simulator";
@@ -46,6 +46,11 @@ namespace SharedTypes
     inline constexpr float degradedEntryBatteryPercent = 50.f;
     inline constexpr float safeEntryBatteryPercent = 30.f;
     inline constexpr float nominalRecoveryBatteryPercent = 60.f;
+
+    // message vocabulary
+    inline const QString groundTelemetryMessageType = "groundTelemetry";
+    inline const QString faultInjectionMessageType = "faultInjection";
+    inline const QString ackMessageType = "ack";
 
     enum class Mode
     {

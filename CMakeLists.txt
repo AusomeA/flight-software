@@ -191,9 +191,11 @@ enable_testing()
 add_executable(
     vsat_tests
     tests/FlightComputerTests.cpp
+    tests/EnvelopeTests.cpp
     apps/flight_computer/FlightComputer.h
     apps/flight_computer/FlightComputer.cpp
     libs/core/SharedTypes.h
+    libs/protocol/EnvelopeJson.h
 )
 
 target_link_libraries(
