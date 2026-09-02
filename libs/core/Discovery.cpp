@@ -20,6 +20,17 @@ Discovery::Discovery(const QString &myName, const QString &vehicleName, QObject 
     announceTimer_.start(SharedTypes::discoveryIntervalMilliseconds);
 }
 
+QList<QHostAddress> Discovery::LivePeerAddresses(const QString &appName) const
+{
+    QList<QHostAddress> addresses;
+    for (const Peer &peer : peers_)
+    {
+        if (peer.appName == appName)
+            addresses.append(peer.address);
+    }
+    return addresses;
+}
+
 void Discovery::Announce()
 {
     QJsonObject announcement;

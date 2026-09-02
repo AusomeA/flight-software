@@ -5,6 +5,7 @@
 #include <QHostAddress>
 #include <QElapsedTimer>
 #include <QMap>
+#include <QList>
 
 class Discovery : public QObject
 {
@@ -12,6 +13,8 @@ class Discovery : public QObject
 
     public:
     Discovery(const QString &myName, const QString &vehicleName, QObject *parent = nullptr);
+
+    QList<QHostAddress> LivePeerAddresses(const QString &appName) const;
 
     signals: 
     void peerAppeared(const QString &appName, QHostAddress address);

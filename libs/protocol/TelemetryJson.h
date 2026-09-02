@@ -25,7 +25,7 @@ inline bool HasAllKeys(const QJsonObject &json, const QStringList &requiredKeys)
     return true;
 }
 
-inline QByteArray TelemetryToJson(const SharedTypes::Telemetry &telemetry)
+inline QJsonObject TelemetryToJsonObject(const SharedTypes::Telemetry &telemetry)
 {
     QJsonObject json;
     json["missionElapsedTimeSeconds"] = telemetry.missionElapsedTimeSeconds;
@@ -44,7 +44,12 @@ inline QByteArray TelemetryToJson(const SharedTypes::Telemetry &telemetry)
     json["payloadEnabled"] = telemetry.payloadEnabled;
     json["secondsUntilSunrise"] = telemetry.secondsUntilSunrise;
 
-    return QJsonDocument(json).toJson(QJsonDocument::Compact); // Compact to remove whitespace
+    return json; 
+}
+
+inline QByteArray TelemetryToJson(const SharedTypes::Telemetry &telemetry)
+{
+    return QJsonDocument(TelemetryToJsonObject(telemetry)).toJson(QJsonDocument::Compact);
 }
 
 inline std::optional<SharedTypes::Telemetry> TelemetryFromJson(const QByteArray &payload)

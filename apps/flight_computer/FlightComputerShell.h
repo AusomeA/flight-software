@@ -51,7 +51,9 @@ Q_OBJECT
 
     UdpReceiver receiver_;
     QUdpSocket commandSocket_;
+    QUdpSocket groundTelemetrySocket_;
     QHostAddress simulatorAddress_;
+    qint64 groundSequence_ = 0;
 
     Discovery discovery_{SharedTypes::flightComputerName, SharedTypes::defaultVehicleName};
 
@@ -61,7 +63,8 @@ Q_OBJECT
     static constexpr int linkCheckIntervalMilliseconds = 200;
 
     void HandleTelemetry(const QByteArray &payload);
-    void UpdateLinkRow();                                           // Have to update seperate in case packet does not arrive
+    void UpdateLinkRow();       
+    void SendGroundTelemetry(bool simLinkOk);                                    // Have to update seperate in case packet does not arrive
     
     void PopulateRows();
     void UpdateRows(bool stale = false);

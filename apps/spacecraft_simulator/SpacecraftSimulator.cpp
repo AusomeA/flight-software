@@ -384,8 +384,7 @@ void SpacecraftSimulator::SendTelemetry()
     if (blackedOut_)
         return;
 
-    telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()),
-                                   flightComputerAddress_, SharedTypes::simTelemetryPort); // local host changes when we move to pi's
+    telemetrySocket_.writeDatagram(TelemetryToJson(BuildTelemetry()), flightComputerAddress_, SharedTypes::simTelemetryPort); // local host changes when we move to pi's
 }
 
 void SpacecraftSimulator::HandleCommands(const QByteArray &payload)

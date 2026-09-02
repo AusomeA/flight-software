@@ -2,6 +2,7 @@
 #include "ReadoutFormatting.h"
 #include "Helpers.h"
 #include "TelemetryJson.h"
+#include "EnvelopeJson.h"
 #include <QCoreApplication>
 
 FlightComputerShell::FlightComputerShell(QObject *parent)
@@ -103,4 +104,23 @@ void FlightComputerShell::UpdateLinkRow()
 
     if(linkLost)
         UpdateRows(true);
+
+    SendGroundTelemetry(!linkLost);  
+}
+
+void FlightComputerShell::SendGroundTelemetry(bool simLinkOk)
+{
+    Envelope envelope;
+    envelope.type = SharedTypes::groundTelemetryMessageType;
+    envelope.sequence = groundSequence_++;
+    envelope.body["telemetry"] = TelemetryToJsonObject(flightComputer_.GetTelemetry());
+    envelope.body["mode"] = static_cast<int>(flightComputer_.GetMode());
+    envelope.body["simLinkOk"] = simLinkOk;
+
+    const QByteArray datagram = EnvelopeToJson(envelope);
+
+    for(const QHostAddress &address : discovery_.LivePeerAddresses(SharedTypes::groundControlName))
+    {
+        groundTelemetrySocket_.writeDatagram(datagram, address, SharedTypes::groundTelemetryPort);
+    }
 }
