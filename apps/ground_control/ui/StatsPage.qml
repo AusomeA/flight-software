@@ -15,12 +15,14 @@ Page {
     readonly property int rowHeight: Math.floor(readoutGrid.height / readoutRowCount)
     readonly property int baseFontSize: Math.round(rowHeight * 0.45)
     readonly property int cellPadding: Math.round(baseFontSize * 0.5)
+    readonly property int buttonHeight: Math.round(height * 0.1)
+    readonly property int buttonFontSize: Math.round(height * 0.05)
 
     Grid {
         id: readoutGrid
         anchors.fill: parent
         anchors.margins: 10
-        anchors.bottomMargin: 100
+        anchors.bottomMargin: statsPage.buttonHeight + 40
         columns: 2
         rowSpacing: 0
         columnSpacing: 10
@@ -89,11 +91,12 @@ Page {
 
     Button {
         text: "Back"
-        width: 120
-        height: 60
+        width: statsPage.buttonHeight * 2
+        height: statsPage.buttonHeight
         anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.margins: 20
+        font.pixelSize: statsPage.buttonFontSize
         onClicked: statsPage.StackView.view.pop()
     }
 }

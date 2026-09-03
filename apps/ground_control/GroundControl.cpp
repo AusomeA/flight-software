@@ -17,6 +17,13 @@ GroundControl::GroundControl(QObject *parent)
                           {"Attitude Sensor Fault", "Off", static_cast<int>(SharedTypes::Status::none)}});
     connect(&godSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleFaultAck);
     connect(&godSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleFaultGaveUp);
+
+    connect(&discovery_, &Discovery::peerAppeared, this, [this](const QString &appName, const QHostAddress &)
+            {
+        if(appName != SharedTypes::simulatorName)
+            return;
+            for(int row = 0; row < faultRowCount; ++row)
+                faultsModel_.UpdateRow(row, "Off", static_cast<int> (SharedTypes::Status::none)); });
 }
 
 void GroundControl::PopulateRows()
@@ -63,9 +70,10 @@ void GroundControl::UpdateLinkRow()
     const bool linkLost = neverHeard || silentMilliseconds > SharedTypes::linkLostMilliseconds;
     flightComputerLinked_ = !linkLost;
 
-    readoutsModel_.UpdateRow(flightComputerLinkRow, 
-                            neverHeard ? "No Link" : linkLost ? QString("No Link (%1 s)").arg(silentMilliseconds / 1000.0, 0, 'f', 1) : "Good Link", 
-                            static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
+    readoutsModel_.UpdateRow(flightComputerLinkRow,
+                             neverHeard ? "No Link" : linkLost ? QString("No Link (%1 s)").arg(silentMilliseconds / 1000.0, 0, 'f', 1)
+                                                               : "Good Link",
+                             static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
 
     if (linkLost)
         UpdateRows(true);
