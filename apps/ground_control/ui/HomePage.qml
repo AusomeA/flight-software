@@ -10,7 +10,7 @@ Page {
 
     readonly property int titleFontSize: Math.round(height * .06)
     readonly property int baseFontSize: Math.round(height * 0.035)
-    readonly property int buttonHeight: Math.round(height * 0.12)
+    readonly property int buttonFontSize: Math.round(height * 0.06)
     readonly property int pageMargin: Math.round(height * .03)
 
     ColumnLayout {
@@ -49,25 +49,24 @@ Page {
         Button {
             text: "Display Stats"
             Layout.fillWidth: true
-            Layout.preferredHeight: homePage.buttonHeight
+            Layout.fillHeight: true
+            font.pixelSize: homePage.buttonFontSize
             onClicked: homePage.StackView.view.push("StatsPage.qml")
         }
 
         Button {
             text: "Fault Injection"
             Layout.fillWidth: true
-            Layout.preferredHeight: homePage.buttonHeight
+            Layout.fillHeight: true
+            font.pixelSize: homePage.buttonFontSize
             onClicked: homePage.StackView.view.push("FaultPage.qml")
         }
 
         Button {
             text: "Connection"
             Layout.fillWidth: true
-            Layout.preferredHeight: homePage.buttonHeight
-        }
-
-        Item {
             Layout.fillHeight: true
+            font.pixelSize: homePage.buttonFontSize
         }
     }
 }

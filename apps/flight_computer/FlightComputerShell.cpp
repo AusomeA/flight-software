@@ -14,7 +14,6 @@ FlightComputerShell::FlightComputerShell(QObject *parent)
     PopulateRows();
     connect(&receiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerShell::HandleTelemetry);
 
-    timeSinceLastPacket_.start();
     connect(&linkCheckTimer_, &QTimer::timeout, this, &FlightComputerShell::UpdateLinkRow);
     linkCheckTimer_.start(linkCheckIntervalMilliseconds);
 
@@ -66,10 +65,13 @@ void FlightComputerShell::HandleTelemetry(const QByteArray &payload)
 
 void FlightComputerShell::UpdateLinkRow()
 {
-    const qint64 silentMillisecond = timeSinceLastPacket_.elapsed();
-    const bool linkLost = silentMillisecond > SharedTypes::linkLostMilliseconds;
+    const bool neverHeard = !timeSinceLastPacket_.isValid();
+    const qint64 silentMillisecond = neverHeard ? 0 : timeSinceLastPacket_.elapsed();
+    const bool linkLost = neverHeard || silentMillisecond > SharedTypes::linkLostMilliseconds;
 
-    readoutsModel_.UpdateRow(linkRow, linkLost ? QString("No Link (%1 s)").arg(silentMillisecond / 1000.0, 0, 'f', 1) : "Good Link", static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
+    readoutsModel_.UpdateRow(linkRow, 
+                            neverHeard ? "No Link" : linkLost ? QString("No Link (%1 s)").arg(silentMillisecond / 1000.0, 0, 'f', 1) : "Good Link", 
+                            static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
 
     if(linkLost)
         UpdateRows(true);

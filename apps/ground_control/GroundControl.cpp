@@ -9,7 +9,6 @@ GroundControl::GroundControl(QObject *parent)
     PopulateRows();
     connect(&telemetryReceiver_, &UdpReceiver::DatagramReceived, this, &GroundControl::HandleGroundTelemetry);
 
-    timeSinceLastPacket_.start();
     connect(&linkCheckTimer_, &QTimer::timeout, this, &GroundControl::UpdateLinkRow);
     linkCheckTimer_.start(linkCheckIntervalMilliseconds);
 
@@ -59,11 +58,14 @@ void GroundControl::HandleGroundTelemetry(const QByteArray &payload)
 
 void GroundControl::UpdateLinkRow()
 {
-    const qint64 silentMilliseconds = timeSinceLastPacket_.elapsed();
-    const bool linkLost = silentMilliseconds > SharedTypes::linkLostMilliseconds;
+    const bool neverHeard = !timeSinceLastPacket_.isValid();
+    const qint64 silentMilliseconds = neverHeard ? 0 : timeSinceLastPacket_.elapsed();
+    const bool linkLost = neverHeard || silentMilliseconds > SharedTypes::linkLostMilliseconds;
     flightComputerLinked_ = !linkLost;
 
-    readoutsModel_.UpdateRow(flightComputerLinkRow, linkLost ? QString("No Link (%1 s)").arg(silentMilliseconds / 1000.0, 0, 'f', 1) : "Good Link", static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
+    readoutsModel_.UpdateRow(flightComputerLinkRow, 
+                            neverHeard ? "No Link" : linkLost ? QString("No Link (%1 s)").arg(silentMilliseconds / 1000.0, 0, 'f', 1) : "Good Link", 
+                            static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
 
     if (linkLost)
         UpdateRows(true);
