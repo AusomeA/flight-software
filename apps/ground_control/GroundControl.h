@@ -9,6 +9,7 @@
 #include "UdpReceiver.h"
 #include "SharedTypes.h"
 #include "TelemetryReadouts.h"
+#include "AckUdpSender.h"
 
 enum GCReadoutRowIndex
 {
@@ -18,7 +19,16 @@ enum GCReadoutRowIndex
     gcHeaderRowCount
 };
 
-class GroundControl : public QObject {
+enum FaultRowIndex
+{
+    temperatureSensorFaultRow,
+    powerSensorFaultRow,
+    attitudeSensorFaultRow,
+    faultRowCount
+};
+
+class GroundControl : public QObject
+{
     Q_OBJECT
     QML_NAMED_ELEMENT(GroundControl)
     Q_PROPERTY(QAbstractItemModel *readoutsModel READ ReadoutsModelPtr CONSTANT)
@@ -26,21 +36,25 @@ class GroundControl : public QObject {
     Q_PROPERTY(bool simulatorLinked READ SimulatorLinked NOTIFY summaryChanged)
     Q_PROPERTY(QString modeText READ CurrentModeText NOTIFY summaryChanged)
     Q_PROPERTY(int modeStatus READ CurrentModeStatus NOTIFY summaryChanged)
+    Q_PROPERTY(QAbstractItemModel *faultsModel READ FaultsModelPtr CONSTANT)
 
-    public:
+public:
     GroundControl(QObject *parent = nullptr);
 
-    QAbstractItemModel *ReadoutsModelPtr() {return &readoutsModel_;}
+    QAbstractItemModel *ReadoutsModelPtr() { return &readoutsModel_; }
 
-    bool FlightComputerLinked() const {return flightComputerLinked_;}
-    bool SimulatorLinked() const {return flightComputerLinked_ && simLinkOk_;}
-    QString CurrentModeText() const {return ModeText(mode_);}
-    int CurrentModeStatus() const {return static_cast<int>(flightComputerLinked_ ? GetModeStatus(mode_) : SharedTypes::Status::stale);}
+    bool FlightComputerLinked() const { return flightComputerLinked_; }
+    bool SimulatorLinked() const { return flightComputerLinked_ && simLinkOk_; }
+    QString CurrentModeText() const { return ModeText(mode_); }
+    int CurrentModeStatus() const { return static_cast<int>(flightComputerLinked_ ? GetModeStatus(mode_) : SharedTypes::Status::stale); }
 
-    signals:
+    QAbstractItemModel *FaultsModelPtr() { return &faultsModel_; }
+    Q_INVOKABLE void SetFault(int faultRow, bool active);
+
+signals:
     void summaryChanged();
 
-    private:
+private:
     ReadoutsModel readoutsModel_;
     UdpReceiver telemetryReceiver_;
 
@@ -60,4 +74,19 @@ class GroundControl : public QObject {
     void UpdateLinkRow();
     void PopulateRows();
     void UpdateRows(bool stale = false);
+
+    ReadoutsModel faultsModel_;
+    AckUdpSender godSender_;
+
+    struct PendingFault
+    {
+        int row = 0;
+        bool active = false;
+    };
+
+    QMap<qint64, PendingFault> pendingFaults_;
+
+    static QString FaultName(int faultRow);
+    void HandleFaultAck(qint64 sequence, bool accepted);
+    void HandleFaultGaveUp(qint64 sequence);
 };
