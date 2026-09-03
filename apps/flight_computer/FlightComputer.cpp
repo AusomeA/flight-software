@@ -36,6 +36,16 @@ SharedTypes::Commands FlightComputer::Update(const SharedTypes::Telemetry &telem
     return commands;
 }
 
+bool FlightComputer::RequestExitSafeMode()
+{
+    if(mode_ != SharedTypes::Mode::safe)
+        return false;
+
+    exitSafeModeRequested_ = true;
+
+    return true;
+}
+
 void FlightComputer::ModeCheck()
 {
     if (mode_ == SharedTypes::Mode::safe)

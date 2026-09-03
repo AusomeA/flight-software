@@ -8,6 +8,7 @@ public:
     FlightComputer();
 
     SharedTypes::Commands Update(const SharedTypes::Telemetry &telemetry);
+    bool RequestExitSafeMode();
 
     SharedTypes::Mode GetMode() const { return mode_; }
 
@@ -22,6 +23,8 @@ private:
     SharedTypes::Telemetry telemetry_;
 
     double lastGroundContactSeconds_;
+
+    bool exitSafeModeRequested_ = false;
 
     static constexpr float maxSecondsWithoutGroundContact = 10800; // max amount of time without contact before we go into safe mode
 

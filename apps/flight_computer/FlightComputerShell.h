@@ -37,6 +37,7 @@ Q_OBJECT
     ReadoutsModel readoutsModel_;
 
     UdpReceiver receiver_;
+    UdpReceiver groundCommandReceiver_;
     QUdpSocket commandSocket_;
     QUdpSocket groundTelemetrySocket_;
     QHostAddress simulatorAddress_;
@@ -50,6 +51,7 @@ Q_OBJECT
     static constexpr int linkCheckIntervalMilliseconds = 200;
 
     void HandleTelemetry(const QByteArray &payload);
+    void HandleGroundCommand(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort);
     void UpdateLinkRow();       
     void SendGroundTelemetry(bool simLinkOk);                                    // Have to update seperate in case packet does not arrive
     

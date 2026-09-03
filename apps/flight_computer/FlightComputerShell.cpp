@@ -5,14 +5,17 @@
 #include "EnvelopeJson.h"
 #include "TelemetryReadouts.h"
 #include <QCoreApplication>
+#include <iostream>
 
 FlightComputerShell::FlightComputerShell(QObject *parent)
     : QObject(parent),
       receiver_(SharedTypes::simTelemetryPort),
+      groundCommandReceiver_(SharedTypes::groundCommandPort),
       simulatorAddress_(QHostAddress::LocalHost)
 {
     PopulateRows();
     connect(&receiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerShell::HandleTelemetry);
+    connect(&groundCommandReceiver_, &UdpReceiver::DatagramReceived, this, &FlightComputerShell::HandleGroundCommand);
 
     connect(&linkCheckTimer_, &QTimer::timeout, this, &FlightComputerShell::UpdateLinkRow);
     linkCheckTimer_.start(linkCheckIntervalMilliseconds);
@@ -61,6 +64,30 @@ void FlightComputerShell::HandleTelemetry(const QByteArray &payload)
     SharedTypes::Commands commands = flightComputer_.Update(*telemetry);
     commandSocket_.writeDatagram(CommandsToJson(commands), simulatorAddress_, SharedTypes::simCommandPort);         // Local Host will change later
     UpdateRows();
+}
+
+void FlightComputerShell::HandleGroundCommand(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort)
+{
+    std::optional<Envelope> envelope = EnvelopeFromJson(payload);
+    if(!envelope || envelope->type != SharedTypes::groundCommandMessageType)
+    {
+        qWarning() << "Dropped malformed ground command packet";
+        return;
+    }
+
+    const QString command = envelope->body["command"].toString();
+    bool accepted = false;
+
+    if(command == SharedTypes::exitSafeModeCommand)
+        accepted = flightComputer_.RequestExitSafeMode();
+
+    std::cout << "Ground command " << command.toStdString() << (accepted ? " accepted" : " rejected") << std::endl;
+
+    Envelope ackEnvelope;
+    ackEnvelope.type = SharedTypes::ackMessageType;
+    ackEnvelope.sequence = envelope->sequence;
+    ackEnvelope.body["accepted"] = accepted;
+    groundTelemetrySocket_.writeDatagram(EnvelopeToJson(ackEnvelope), senderAddress, senderPort);
 }
 
 void FlightComputerShell::UpdateLinkRow()

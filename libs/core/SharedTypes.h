@@ -50,12 +50,16 @@ namespace SharedTypes
     // message vocabulary
     inline const QString groundTelemetryMessageType = "groundTelemetry";
     inline const QString faultInjectionMessageType = "faultInjection";
+    inline const QString groundCommandMessageType = "groundCommand";
     inline const QString ackMessageType = "ack";
 
     // fault messages
     inline const QString temperatureSensorFaultMessage = "temperatureSensorFault";
     inline const QString powerSensorFaultMessage = "powerSensorFault";
     inline const QString attitudeSensorFaultMessage = "attitudeSensorFault";
+
+    // command messages
+    inline const QString exitSafeModeCommand = "exitSafeMode";
 
     // Ack Variables
     inline constexpr int ackTimeoutMilliseconds = 500;
