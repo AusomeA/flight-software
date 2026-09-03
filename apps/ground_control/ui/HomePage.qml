@@ -57,6 +57,7 @@ Page {
             text: "Fault Injection"
             Layout.fillWidth: true
             Layout.preferredHeight: homePage.buttonHeight
+            onClicked: homePage.StackView.view.push("FaultPage.qml")
         }
 
         Button {

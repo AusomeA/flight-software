@@ -157,6 +157,7 @@ qt_add_qml_module(
     apps/ground_control/ui/Main.qml
     apps/ground_control/ui/HomePage.qml
     apps/ground_control/ui/StatsPage.qml
+    apps/ground_control/ui/FaultPage.qml
 )
 
 target_link_libraries(
