@@ -143,6 +143,8 @@ qt_add_executable(
     libs/core/Discovery.cpp
     libs/ui/TelemetryReadouts.h
     libs/protocol/EnvelopeJson.h
+    libs/networking/AckUdpSender.h
+    libs/networking/AckUdpSender.cpp
 )
 
 qt_add_qml_module(

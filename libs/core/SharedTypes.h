@@ -57,6 +57,10 @@ namespace SharedTypes
     inline const QString powerSensorFaultMessage = "powerSensorFault";
     inline const QString attitudeSensorFaultMessage = "attitudeSensorFault";
 
+    // Ack Variables
+    inline constexpr int ackTimeoutMilliseconds = 500;
+    inline constexpr int maxSendAttempts = 3;
+
     enum class Mode
     {
         nominal,
