@@ -10,6 +10,21 @@ ApplicationWindow {
         id: groundControl
     }
 
+    function statusColor(status) {
+        switch (status) {
+        case SharedTypes.Status.good:
+            return "green";
+        case SharedTypes.Status.warning:
+            return "yellow";
+        case SharedTypes.Status.critical:
+            return "red";
+        case SharedTypes.Status.stale:
+            return "steelblue";
+        default:
+            return "white"; // none / unknown
+        }
+    }
+
     function toggleFullScreen() {
         root.visibility = root.visibility === Window.FullScreen ? Window.Windowed : Window.FullScreen;
     }

@@ -3,35 +3,50 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Page {
-    id: homePage 
-    background: Rectangle { color: "black"}
+    id: homePage
+    background: Rectangle {
+        color: "black"
+    }
 
     readonly property int titleFontSize: Math.round(height * .06)
     readonly property int baseFontSize: Math.round(height * 0.035)
     readonly property int buttonHeight: Math.round(height * 0.12)
     readonly property int pageMargin: Math.round(height * .03)
 
-    ColumnLayout{
+    ColumnLayout {
         anchors.fill: parent
         anchors.margins: homePage.pageMargin
         spacing: homePage.pageMargin
 
-        Label{
+        Label {
             text: "Ground Control"
             color: "green"
             font.pixelSize: homePage.titleFontSize
             Layout.alignment: Qt.AlignHCenter
         }
 
-        RowLayout{
+        RowLayout {
             Layout.fillWidth: true
             spacing: homePage.pageMargin
-            
-            Label { text: "Link: No Link";  color: "steelBlue";     font.pixelSize: homePage.baseFontSize}
-            Label { text: "Mode: N/A";      color: "red";           font.pixelSize: homePage.baseFontSize}
+
+            Label {
+                text: "FC Link: " + (groundControl.flightComputerLinked ? "Linked" : "Not Linked")
+                color: groundControl.flightComputerLinked ? "green" : "red"
+                font.pixelSize: homePage.baseFontSize
+            }
+            Label {
+                text: "Sim Link: " + (groundControl.simulatorLinked ? "Linked" : "Not Linked")
+                color: groundControl.simulatorLinked ? "green" : "red"
+                font.pixelSize: homePage.baseFontSize
+            }
+            Label {
+                text: "Mode: " + groundControl.modeText
+                color: root.statusColor(groundControl.modeStatus)
+                font.pixelSize: homePage.baseFontSize
+            }
         }
 
-        Button{
+        Button {
             text: "Display Stats"
             Layout.fillWidth: true
             Layout.preferredHeight: homePage.buttonHeight
@@ -50,6 +65,8 @@ Page {
             Layout.preferredHeight: homePage.buttonHeight
         }
 
-        Item { Layout.fillHeight: true}
+        Item {
+            Layout.fillHeight: true
+        }
     }
 }

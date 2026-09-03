@@ -47,18 +47,22 @@ void GroundControl::HandleGroundTelemetry(const QByteArray &payload)
 
     timeSinceLastPacket_.restart();
     UpdateRows();
+    emit summaryChanged();
 }
 
 void GroundControl::UpdateLinkRow()
 {
     const qint64 silentMilliseconds = timeSinceLastPacket_.elapsed();
     const bool linkLost = silentMilliseconds > SharedTypes::linkLostMilliseconds;
+    flightComputerLinked_ = !linkLost;
 
     readoutsModel_.UpdateRow(flightComputerLinkRow, linkLost ? QString("No Link (%1 s)").arg(silentMilliseconds / 1000.0, 0, 'f', 1) 
                              : "Good Link", static_cast<int>(linkLost ? SharedTypes::Status::critical : SharedTypes::Status::good));
 
     if(linkLost)
         UpdateRows(true);
+
+    emit summaryChanged();
 }
 
 void GroundControl::UpdateRows(bool stale)
