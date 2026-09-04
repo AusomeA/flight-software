@@ -49,7 +49,14 @@ bool FlightComputer::RequestExitSafeMode()
 void FlightComputer::ModeCheck()
 {
     if (mode_ == SharedTypes::Mode::safe)
-        return;
+    {
+        if(!exitSafeModeRequested_)
+            return;
+
+        exitSafeModeRequested_ = false;
+        mode_ = SharedTypes::Mode::nominal;
+        cout << "Ground requested exit from safe mode" << endl;
+    }
 
     if (mode_ == SharedTypes::Mode::degraded)
     {

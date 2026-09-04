@@ -63,10 +63,11 @@ Page {
         }
 
         Button {
-            text: "Connection"
+            text: "Commands"
             Layout.fillWidth: true
             Layout.fillHeight: true
             font.pixelSize: homePage.buttonFontSize
+            onClicked: homePage.StackView.view.push("CommandPage.qml")
         }
     }
 }

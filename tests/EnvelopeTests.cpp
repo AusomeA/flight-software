@@ -52,4 +52,3 @@ TEST(EnvelopeJson, EmptyBodyIsValidCheck)
     ASSERT_TRUE(parsed.has_value());
     EXPECT_TRUE(parsed->body.isEmpty());
 }
-

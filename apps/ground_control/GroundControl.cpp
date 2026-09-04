@@ -18,6 +18,10 @@ GroundControl::GroundControl(QObject *parent)
     connect(&godSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleFaultAck);
     connect(&godSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleFaultGaveUp);
 
+    commandsModel_.SetRows({{"Exit Safe Mode", "Ready", static_cast<int>(SharedTypes::Status::none)}});
+    connect(&groundSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleCommandAck);
+    connect(&groundSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleCommandGaveUp);
+
     connect(&discovery_, &Discovery::peerAppeared, this, [this](const QString &appName, const QHostAddress &)
             {
         if(appName != SharedTypes::simulatorName)
@@ -132,6 +136,30 @@ void GroundControl::SetFault(int faultRow, bool active)
     faultsModel_.UpdateRow(faultRow, active ? "Turning On..." : "Turning Off...", static_cast<int>(SharedTypes::Status::warning));
 }
 
+void GroundControl::SendCommand(int commandRow)
+{
+    const QString commandName = CommandName(commandRow);
+    if(commandName.isEmpty())
+    {
+        qWarning() << "Unknown command row" << commandRow;
+        return;
+    }
+
+    const QList<QHostAddress> flightComputers = discovery_.LivePeerAddresses(SharedTypes::flightComputerName);
+    if(flightComputers.isEmpty())
+    {
+        commandsModel_.UpdateRow(commandRow, "No Flight Computer", static_cast<int>(SharedTypes::Status::critical));
+        return;
+    }
+
+    QJsonObject body;
+    body["command"] = commandName;
+
+    const qint64 sequence = groundSender_.SendAck(SharedTypes::groundCommandMessageType, body, flightComputers.first(), SharedTypes::groundCommandPort);
+    pendingCommands_[sequence] = commandRow;
+    commandsModel_.UpdateRow(commandRow, "Sending...", static_cast<int>(SharedTypes::Status::warning));
+}
+
 void GroundControl::HandleFaultAck(qint64 sequence, bool accepted)
 {
     if (!pendingFaults_.contains(sequence))
@@ -152,4 +180,33 @@ void GroundControl::HandleFaultGaveUp(qint64 sequence)
 
     const PendingFault fault = pendingFaults_.take(sequence);
     faultsModel_.UpdateRow(fault.row, "No Response", static_cast<int>(SharedTypes::Status::critical));
+}
+
+QString GroundControl::CommandName(int commandRow)
+{
+    switch(commandRow)
+    {
+        case exitSafeModeRow:
+            return SharedTypes::exitSafeModeCommand;
+        default:
+            return QString();
+    }
+}
+
+void GroundControl::HandleCommandAck(qint64 sequence, bool accepted)
+{
+    if (!pendingCommands_.contains(sequence))
+        return;
+
+    const int commandRow = pendingCommands_.take(sequence);
+    commandsModel_.UpdateRow(commandRow, accepted ? "Accepted" : "Rejected", static_cast<int>(accepted ? SharedTypes::Status::good : SharedTypes::Status::critical));
+}
+
+void GroundControl::HandleCommandGaveUp(qint64 sequence)
+{
+    if(!pendingCommands_.contains(sequence))
+        return;
+
+    const int commandRow = pendingCommands_.take(sequence);
+    commandsModel_.UpdateRow(commandRow, "No Response", static_cast<int>(SharedTypes::Status::critical));
 }

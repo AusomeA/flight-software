@@ -27,6 +27,12 @@ enum FaultRowIndex
     faultRowCount
 };
 
+enum CommandRowIndex
+{
+    exitSafeModeRow,
+    commandRowCount
+};
+
 class GroundControl : public QObject
 {
     Q_OBJECT
@@ -37,6 +43,7 @@ class GroundControl : public QObject
     Q_PROPERTY(QString modeText READ CurrentModeText NOTIFY summaryChanged)
     Q_PROPERTY(int modeStatus READ CurrentModeStatus NOTIFY summaryChanged)
     Q_PROPERTY(QAbstractItemModel *faultsModel READ FaultsModelPtr CONSTANT)
+    Q_PROPERTY(QAbstractItemModel *commandsModel READ CommandsModelPtr CONSTANT)
 
 public:
     GroundControl(QObject *parent = nullptr);
@@ -50,6 +57,9 @@ public:
 
     QAbstractItemModel *FaultsModelPtr() { return &faultsModel_; }
     Q_INVOKABLE void SetFault(int faultRow, bool active);
+
+    QAbstractItemModel *CommandsModelPtr() { return &commandsModel_; }
+    Q_INVOKABLE void SendCommand(int commandRow);
 
 signals:
     void summaryChanged();
@@ -67,6 +77,10 @@ private:
     SharedTypes::Mode mode_ = SharedTypes::Mode::nominal;
     bool simLinkOk_ = false;
     bool flightComputerLinked_ = false;
+
+    ReadoutsModel commandsModel_;
+    AckUdpSender groundSender_;
+    QMap<qint64, int> pendingCommands_;
 
     static constexpr int linkCheckIntervalMilliseconds = 200;
 
@@ -89,4 +103,8 @@ private:
     static QString FaultName(int faultRow);
     void HandleFaultAck(qint64 sequence, bool accepted);
     void HandleFaultGaveUp(qint64 sequence);
+
+    static QString CommandName(int commandRow);
+    void HandleCommandAck(qint64 sequence, bool accepted);
+    void HandleCommandGaveUp(qint64 sequence);
 };
