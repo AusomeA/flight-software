@@ -26,12 +26,22 @@ GroundControl::GroundControl(QObject *parent)
     connect(&groundSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleCommandAck);
     connect(&groundSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleCommandGaveUp);
 
+    inhibitsModel_.SetRows({{"Temperature Sensor Inhibit", "Off", static_cast<int>(SharedTypes::Status::none)},
+                            {"Power Sensor Inhibit", "Off", static_cast<int>(SharedTypes::Status::none)},
+                            {"Attitude Sensor Inhibit", "Off", static_cast<int>(SharedTypes::Status::none)}});
+    connect(&inhibitSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleInhibitAck);
+    connect(&inhibitSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleInhibitGaveUp);
+
     connect(&discovery_, &Discovery::peerAppeared, this, [this](const QString &appName, const QHostAddress &)
             {
-        if(appName != SharedTypes::simulatorName)
-            return;
-            for(int row = 0; row < faultRowCount; ++row)
-                faultsModel_.UpdateRow(row, "Off", static_cast<int> (SharedTypes::Status::none)); });
+                if(appName == SharedTypes::simulatorName)
+                    for(int row = 0; row < faultRowCount; ++row)
+                        faultsModel_.UpdateRow(row, "Off", static_cast<int> (SharedTypes::Status::none)); 
+
+                if(appName == SharedTypes::flightComputerName)
+                        ResetInhibitRows();
+            });
+        
 }
 
 void GroundControl::PopulateRows()
@@ -90,6 +100,7 @@ void GroundControl::UpdateLinkRow()
         rebootInProgress_ = false;
         cout << "Flight computer rebooted" << endl;
         commandsModel_.UpdateRow(rebootRow, "Rebooted", static_cast<int>(SharedTypes::Status::good));
+        ResetInhibitRows();
     }
 
     readoutsModel_.UpdateRow(flightComputerLinkRow,
@@ -182,6 +193,34 @@ void GroundControl::SendCommand(int commandRow)
     cout << "Sent command " << commandName.toStdString() << endl;
 }
 
+void GroundControl::SetInhibits(int faultRow, bool inhibited)
+{
+    const QString faultName = FaultName(faultRow);
+    if(faultName.isEmpty())
+    {
+        qWarning() << "Unknown inhibit row" << faultRow;
+        return;
+    }
+
+    const QList<QHostAddress> flightComputers = discovery_.LivePeerAddresses(SharedTypes::flightComputerName);
+    if(flightComputers.isEmpty())
+    {
+        inhibitsModel_.UpdateRow(faultRow, "No Flight Computer", static_cast<int>(SharedTypes::Status::critical));
+        cout << "No flight computer to send inhibit " << faultName.toStdString() << " to" << endl;
+        return;
+    }
+
+    QJsonObject body;
+    body["command"] = SharedTypes::inhibitFaultCommand;
+    body["fault"] = faultName;
+    body["inhibited"] = inhibited;
+
+    const qint64 sequence = inhibitSender_.SendAck(SharedTypes::groundCommandMessageType, body, flightComputers.first(), SharedTypes::groundCommandPort);
+    pendingInhibits_[sequence] = {faultRow, inhibited};
+    inhibitsModel_.UpdateRow(faultRow, inhibited ? "Turning On..." : "Turning Off...", static_cast<int>(SharedTypes::Status::warning));
+    cout << "Sent inhibit " << faultName.toStdString() << (inhibited ? " on" : " off") << endl;
+}
+
 void GroundControl::HandleFaultAck(qint64 sequence, bool accepted)
 {
     if (!pendingFaults_.contains(sequence))
@@ -246,4 +285,34 @@ void GroundControl::HandleCommandGaveUp(qint64 sequence)
     const int commandRow = pendingCommands_.take(sequence);
     cout << "Command " << CommandName(commandRow).toStdString() << ": no response" << endl;
     commandsModel_.UpdateRow(commandRow, "No Response", static_cast<int>(SharedTypes::Status::critical));
+}
+
+void GroundControl::HandleInhibitAck(qint64 sequence, bool accepted)
+{
+    if(!pendingInhibits_.contains(sequence))
+        return;
+
+    const PendingFault inhibit = pendingInhibits_.take(sequence);
+    cout << "Inhibit " << FaultName(inhibit.row).toStdString() << (inhibit.active ? " on" : " off") << (accepted ? " accepted" : " rejected") << endl;
+
+    if(accepted)
+        inhibitsModel_.UpdateRow(inhibit.row, inhibit.active ? "On" : "Off", static_cast<int>(inhibit.active ? SharedTypes::Status::warning : SharedTypes::Status::none));
+    else
+        inhibitsModel_.UpdateRow(inhibit.row, "Rejected", static_cast<int>(SharedTypes::Status::critical));
+}
+
+void GroundControl::HandleInhibitGaveUp(qint64 sequence)
+{
+    if(!pendingInhibits_.contains(sequence))
+        return;
+
+    const PendingFault inhibit = pendingInhibits_.take(sequence);
+    cout << "Inhibit " << FaultName(inhibit.row).toStdString() << ": no response" << endl;
+    inhibitsModel_.UpdateRow(inhibit.row, "No Response", static_cast<int>(SharedTypes::Status::critical));
+}
+
+void GroundControl::ResetInhibitRows()
+{
+    for(int row = 0; row < faultRowCount; ++row)
+        inhibitsModel_.UpdateRow(row, "Off", static_cast<int>(SharedTypes::Status::none));
 }

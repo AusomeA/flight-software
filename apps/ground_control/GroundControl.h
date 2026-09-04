@@ -45,6 +45,7 @@ class GroundControl : public QObject
     Q_PROPERTY(int modeStatus READ CurrentModeStatus NOTIFY summaryChanged)
     Q_PROPERTY(QAbstractItemModel *faultsModel READ FaultsModelPtr CONSTANT)
     Q_PROPERTY(QAbstractItemModel *commandsModel READ CommandsModelPtr CONSTANT)
+    Q_PROPERTY(QAbstractItemModel *inhibitsModel READ InhibitsModelPtr CONSTANT)
 
 public:
     GroundControl(QObject *parent = nullptr);
@@ -61,6 +62,9 @@ public:
 
     QAbstractItemModel *CommandsModelPtr() { return &commandsModel_; }
     Q_INVOKABLE void SendCommand(int commandRow);
+
+    QAbstractItemModel *InhibitsModelPtr() { return &inhibitsModel_; }
+    Q_INVOKABLE void SetInhibits(int faultRow, bool inhibited);
 
 signals:
     void summaryChanged();
@@ -101,6 +105,10 @@ private:
     AckUdpSender groundSender_;
     QMap<qint64, int> pendingCommands_;
 
+    ReadoutsModel inhibitsModel_;
+    AckUdpSender inhibitSender_;
+    QMap<qint64, PendingFault> pendingInhibits_;
+
     bool rebootInProgress_ = false;
 
     static QString FaultName(int faultRow);
@@ -110,4 +118,8 @@ private:
     static QString CommandName(int commandRow);
     void HandleCommandAck(qint64 sequence, bool accepted);
     void HandleCommandGaveUp(qint64 sequence);
+
+    void HandleInhibitAck(qint64 sequence, bool accepted);
+    void HandleInhibitGaveUp(qint64 sequence);
+    void ResetInhibitRows();
 };
