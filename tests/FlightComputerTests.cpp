@@ -166,6 +166,7 @@ TEST(ModeCheck, ExitSafeModeWhenClearCheck)
     flightComputer.Update(telemetry);
 
     EXPECT_TRUE(flightComputer.RequestExitSafeMode());
+    EXPECT_EQ(flightComputer.GetMode(), SharedTypes::Mode::nominal);
     SharedTypes::Commands commands = flightComputer.Update(telemetry);
     EXPECT_EQ(commands.mode, SharedTypes::Mode::nominal);
 }
@@ -178,7 +179,7 @@ TEST(ModeCheck, ExitSafeModeRefusalCheck)
     telemetry.temperatureSensorHealthy = false;
     flightComputer.Update(telemetry);
 
-    EXPECT_TRUE(flightComputer.RequestExitSafeMode());
+    EXPECT_FALSE(flightComputer.RequestExitSafeMode());
     SharedTypes::Commands commands = flightComputer.Update(telemetry);
     EXPECT_EQ(commands.mode, SharedTypes::Mode::safe);
 

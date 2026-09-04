@@ -42,8 +42,8 @@ bool FlightComputer::RequestExitSafeMode()
         return false;
 
     exitSafeModeRequested_ = true;
-
-    return true;
+    ModeCheck();
+    return mode_ != SharedTypes::Mode::safe;
 }
 
 void FlightComputer::ModeCheck()
