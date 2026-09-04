@@ -20,7 +20,7 @@ SharedTypes::Telemetry NominalTelemetry()
 
 TEST(Sanity, HarnessWorks)
 {
-    EXPECT_EQ(1 +1, 2);
+    EXPECT_EQ(1 + 1, 2);
 }
 
 TEST(ModeCheck, DegradedToSafeCheck)
@@ -111,7 +111,7 @@ TEST(ModeCheck, DegradedToDegradedBackToNominalCheck)
     telemetry.batteryPercent = SharedTypes::degradedEntryBatteryPercent - 1;
     telemetry.isInSunlight = false;
     telemetry.missionElapsedTimeSeconds = 300.0;
-    telemetry.secondsUntilSunrise = 2100.f;    
+    telemetry.secondsUntilSunrise = 2100.f;
     SharedTypes::Commands commands = flightComputer.Update(telemetry);
     EXPECT_EQ(commands.mode, SharedTypes::Mode::degraded);
 
@@ -204,6 +204,53 @@ TEST(ModeCheck, RebootWithFaultActiveCheck)
     EXPECT_EQ(commands.mode, SharedTypes::Mode::safe);
 }
 
+TEST(ModeCheck, InhibitedSensorCheck)
+{
+    FlightComputer flightComputer;
+    SharedTypes::Telemetry telemetry = NominalTelemetry();
+
+    EXPECT_FALSE(flightComputer.SetFaultInhibited("Not a real fault", true));
+    EXPECT_TRUE(flightComputer.SetFaultInhibited(SharedTypes::temperatureSensorFaultMessage, true));
+
+    telemetry.temperatureSensorHealthy = false;
+    SharedTypes::Commands commands = flightComputer.Update(telemetry);
+    EXPECT_EQ(commands.mode, SharedTypes::Mode::nominal);
+
+    EXPECT_TRUE(flightComputer.SetFaultInhibited(SharedTypes::temperatureSensorFaultMessage, false));
+    commands = flightComputer.Update(telemetry);
+    EXPECT_EQ(commands.mode, SharedTypes::Mode::safe);
+}
+
+TEST(ModeCheck, ExitSafeModeWithInhibitorCheck)
+{
+    FlightComputer flightComputer;
+    SharedTypes::Telemetry telemetry = NominalTelemetry();
+
+    telemetry.temperatureSensorHealthy = false;
+    flightComputer.Update(telemetry);
+    EXPECT_FALSE(flightComputer.RequestExitSafeMode());
+
+    flightComputer.SetFaultInhibited(SharedTypes::temperatureSensorFaultMessage, true);
+    EXPECT_TRUE(flightComputer.RequestExitSafeMode());
+    SharedTypes::Commands commands = flightComputer.Update(telemetry);
+    EXPECT_EQ(commands.mode, SharedTypes::Mode::nominal);
+}
+
+TEST(ModeCheck, RebootClearsInhibitCheck)                   
+{
+    FlightComputer flightComputer;
+    SharedTypes::Telemetry telemetry = NominalTelemetry();
+
+    flightComputer.SetFaultInhibited(SharedTypes::temperatureSensorFaultMessage, true);
+    telemetry.temperatureSensorHealthy = false;
+    flightComputer.Update(telemetry);
+    EXPECT_EQ(flightComputer.GetMode(), SharedTypes::Mode::nominal);
+
+    flightComputer.Reboot();
+    SharedTypes::Commands commands = flightComputer.Update(telemetry);
+    EXPECT_EQ(commands.mode, SharedTypes::Mode::safe);
+}
+
 TEST(PayloadCheck, PayloadOnOffCheck)
 {
     FlightComputer flightComputer;
@@ -234,7 +281,7 @@ TEST(PayloadCheck, PayloadOffDuringDegradedSafeCheck)
     telemetry.batteryPercent = SharedTypes::degradedEntryBatteryPercent - 1;
     telemetry.isInSunlight = false;
     telemetry.missionElapsedTimeSeconds = SharedTypes::payloadStartTime + 1;
-    telemetry.secondsUntilSunrise = 2100.f;   
+    telemetry.secondsUntilSunrise = 2100.f;
     SharedTypes::Commands commands = flightComputer.Update(telemetry);
     EXPECT_EQ(commands.payloadEnabled, false);
 
@@ -250,7 +297,7 @@ TEST(PayloadCheck, PayloadOffDuringSafeCheck)
 
     telemetry.missionElapsedTimeSeconds = SharedTypes::payloadStartTime + 1;
     telemetry.isInSunlight = false;
-    telemetry.secondsUntilSunrise = 1499.f;   
+    telemetry.secondsUntilSunrise = 1499.f;
     telemetry.attitudeSensorHealthy = false;
     SharedTypes::Commands commands = flightComputer.Update(telemetry);
 
@@ -353,7 +400,7 @@ TEST(HeaterCheck, HeaterOnOffCheck)
     telemetry.temperatureCelsius = SharedTypes::heaterOnCelsius + 1;
     commands = flightComputer.Update(telemetry);
     EXPECT_EQ(commands.heaterEnabled, false);
-    
+
     telemetry.temperatureCelsius = SharedTypes::heaterOnCelsius - 1;
     commands = flightComputer.Update(telemetry);
     EXPECT_EQ(commands.heaterEnabled, true);
@@ -388,12 +435,12 @@ TEST(TelemetryJson, TelemetryRoundTripCheck)
     SharedTypes::Telemetry telemetry;
     telemetry.missionElapsedTimeSeconds = 4321.5;
     telemetry.batteryPercent = 54.3f;
-    telemetry.solarGenerationWatts = 99.f;    
-    telemetry.powerConsumptionWatts = 101.f;  
+    telemetry.solarGenerationWatts = 99.f;
+    telemetry.powerConsumptionWatts = 101.f;
     telemetry.temperatureCelsius = -12.25f;
     telemetry.heaterEnabled = true;
-    telemetry.radiatorLouversOpen = true;     
-    telemetry.isInSunlight = true;              
+    telemetry.radiatorLouversOpen = true;
+    telemetry.isInSunlight = true;
     telemetry.temperatureSensorHealthy = false;
     telemetry.powerSensorHealthy = false;
     telemetry.attitudeSensorHealthy = false;
@@ -404,7 +451,7 @@ TEST(TelemetryJson, TelemetryRoundTripCheck)
 
     std::optional<SharedTypes::Telemetry> result = TelemetryFromJson(TelemetryToJson(telemetry));
 
-    ASSERT_TRUE(result.has_value());  //if unpacking failed, stop here
+    ASSERT_TRUE(result.has_value()); // if unpacking failed, stop here
 
     EXPECT_DOUBLE_EQ(result->missionElapsedTimeSeconds, 4321.5);
     EXPECT_FLOAT_EQ(result->batteryPercent, 54.3f);
@@ -453,12 +500,12 @@ TEST(TelemetryJson, RejectsMissingKey)
     SharedTypes::Telemetry telemetry;
     telemetry.missionElapsedTimeSeconds = 4321.5;
     telemetry.batteryPercent = 54.3f;
-    telemetry.solarGenerationWatts = 99.f;    
-    telemetry.powerConsumptionWatts = 101.f;  
+    telemetry.solarGenerationWatts = 99.f;
+    telemetry.powerConsumptionWatts = 101.f;
     telemetry.temperatureCelsius = -12.25f;
     telemetry.heaterEnabled = true;
-    telemetry.radiatorLouversOpen = true;     
-    telemetry.isInSunlight = true;              
+    telemetry.radiatorLouversOpen = true;
+    telemetry.isInSunlight = true;
     telemetry.temperatureSensorHealthy = false;
     telemetry.powerSensorHealthy = false;
     telemetry.attitudeSensorHealthy = false;
@@ -474,7 +521,6 @@ TEST(TelemetryJson, RejectsMissingKey)
     std::optional<SharedTypes::Telemetry> result = TelemetryFromJson(brokenPayload);
 
     EXPECT_FALSE(result.has_value());
-    
 }
 
 TEST(TelemetryJson, RejectsBadModeCheck)
@@ -492,7 +538,6 @@ TEST(TelemetryJson, RejectsBadModeCheck)
     std::optional<SharedTypes::Commands> result = CommandsFromJson(brokenPayload);
 
     EXPECT_FALSE(result.has_value());
-
 
     json["mode"] = -1;
     brokenPayload = QJsonDocument(json).toJson();
