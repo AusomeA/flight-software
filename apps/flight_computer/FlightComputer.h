@@ -1,5 +1,6 @@
 #pragma once
 #include "SharedTypes.h"
+#include <QSet>
 
 class FlightComputer
 {
@@ -10,6 +11,7 @@ public:
     SharedTypes::Commands Update(const SharedTypes::Telemetry &telemetry);
     bool RequestExitSafeMode();
     bool Reboot();
+    bool SetFaultInhibited(const QString &faultName, bool inhibited);
 
     SharedTypes::Mode GetMode() const { return mode_; }
 
@@ -26,6 +28,7 @@ private:
     double lastGroundContactSeconds_;
 
     bool exitSafeModeRequested_ = false;
+    QSet<QString> inhibitedFaults_;
 
     static constexpr float maxSecondsWithoutGroundContact = 10800; // max amount of time without contact before we go into safe mode
 
@@ -37,6 +40,8 @@ private:
     void PayloadCheck();
     void CommsCheck();
     void HeaterCheck();
+
+    bool GetSensorFailed(bool healthy, const QString &faultName) const {return !healthy && !inhibitedFaults_.contains(faultName);}
 
     float TimeIntoOrbit() const;
 

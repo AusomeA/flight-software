@@ -53,6 +53,24 @@ bool FlightComputer::Reboot()
     return true;
 }
 
+bool FlightComputer::SetFaultInhibited(const QString &faultName, bool inhibited)
+{
+    const bool knownFault = faultName == SharedTypes::temperatureSensorFaultMessage
+                         || faultName == SharedTypes::powerSensorFaultMessage
+                         || faultName == SharedTypes::attitudeSensorFaultMessage;
+
+    if(!knownFault)
+        return false;
+
+    if(inhibited)
+        inhibitedFaults_.insert(faultName);
+    else
+        inhibitedFaults_.remove(faultName);
+
+    cout << "Fault " << faultName.toStdString() << (inhibited ? " inhibited" : " re-enabled") << endl;
+    return true;
+}
+
 void FlightComputer::ModeCheck()
 {
     if (mode_ == SharedTypes::Mode::safe)
@@ -67,7 +85,10 @@ void FlightComputer::ModeCheck()
 
     if (mode_ == SharedTypes::Mode::degraded)
     {
-        if (telemetry_.batteryPercent > SharedTypes::nominalRecoveryBatteryPercent && telemetry_.temperatureSensorHealthy && telemetry_.powerSensorHealthy && telemetry_.attitudeSensorHealthy)
+        if (telemetry_.batteryPercent > SharedTypes::nominalRecoveryBatteryPercent && 
+            !GetSensorFailed(telemetry_.temperatureSensorHealthy, SharedTypes::temperatureSensorFaultMessage) && 
+            !GetSensorFailed(telemetry_.powerSensorHealthy, SharedTypes::powerSensorFaultMessage) && 
+            !GetSensorFailed(telemetry_.attitudeSensorHealthy, SharedTypes::attitudeSensorFaultMessage))
         {
             mode_ = SharedTypes::Mode::nominal;
             cout << "Spacecraft returned to nominal" << endl;
@@ -78,11 +99,11 @@ void FlightComputer::ModeCheck()
 
     if (telemetry_.batteryPercent < SharedTypes::safeEntryBatteryPercent)
         safeModeReasons += QString("Battery below %1%\n").arg(SharedTypes::safeEntryBatteryPercent);
-    if (!telemetry_.temperatureSensorHealthy)
+    if (GetSensorFailed(telemetry_.temperatureSensorHealthy, SharedTypes::temperatureSensorFaultMessage))
         safeModeReasons += "Temperature sensor failed\n";
-    if (!telemetry_.powerSensorHealthy)
+    if (GetSensorFailed(telemetry_.powerSensorHealthy, SharedTypes::powerSensorFaultMessage))
         safeModeReasons += "Power sensor failed\n";
-    if (!telemetry_.attitudeSensorHealthy)
+    if (GetSensorFailed(telemetry_.attitudeSensorHealthy, SharedTypes::attitudeSensorFaultMessage))
         safeModeReasons += "Attitude sensor failed\n";
     if (telemetry_.missionElapsedTimeSeconds - lastGroundContactSeconds_ > maxSecondsWithoutGroundContact)
         safeModeReasons += "No ground contact\n";

@@ -61,6 +61,7 @@ namespace SharedTypes
     // command messages
     inline const QString exitSafeModeCommand = "exitSafeMode";
     inline const QString rebootCommand = "reboot";
+    inline const QString inhibitFaultCommand = "inhibitFault";
 
     // Ack Variables
     inline constexpr int ackTimeoutMilliseconds = 500;

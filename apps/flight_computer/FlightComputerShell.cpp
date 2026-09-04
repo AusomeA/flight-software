@@ -91,6 +91,8 @@ void FlightComputerShell::HandleGroundCommand(const QByteArray &payload, const Q
         accepted = flightComputer_.RequestExitSafeMode();
     else if(command == SharedTypes::rebootCommand)
         accepted = flightComputer_.Reboot();
+    else if(command == SharedTypes::inhibitFaultCommand)
+        accepted = flightComputer_.SetFaultInhibited(envelope->body["fault"].toString(), envelope->body["inhibited"].toBool());
 
     std::cout << "Ground command " << command.toStdString() << (accepted ? " accepted" : " rejected") << std::endl;
 
@@ -108,7 +110,7 @@ void FlightComputerShell::UpdateLinkRow()
 {
     if(booting_)
         return;
-        
+
     const bool neverHeard = !timeSinceLastPacket_.isValid();
     const qint64 silentMillisecond = neverHeard ? 0 : timeSinceLastPacket_.elapsed();
     const bool linkLost = neverHeard || silentMillisecond > SharedTypes::linkLostMilliseconds;
