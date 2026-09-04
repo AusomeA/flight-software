@@ -20,6 +20,9 @@ FlightComputerShell::FlightComputerShell(QObject *parent)
     connect(&linkCheckTimer_, &QTimer::timeout, this, &FlightComputerShell::UpdateLinkRow);
     linkCheckTimer_.start(linkCheckIntervalMilliseconds);
 
+    bootTimer_.setSingleShot(true);
+    connect(&bootTimer_, &QTimer::timeout, this, &FlightComputerShell::FinishBoot);
+
     const QStringList arguments = QCoreApplication::arguments();
     if(arguments.size() > 1)
     {
@@ -54,6 +57,9 @@ void FlightComputerShell::UpdateRows(bool stale)
 
 void FlightComputerShell::HandleTelemetry(const QByteArray &payload)
 {
+    if(booting_)
+        return;
+
     std::optional<SharedTypes::Telemetry> telemetry = TelemetryFromJson(payload);
     if(!telemetry)
     {
@@ -68,6 +74,9 @@ void FlightComputerShell::HandleTelemetry(const QByteArray &payload)
 
 void FlightComputerShell::HandleGroundCommand(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort)
 {
+    if(booting_)
+        return;
+
     std::optional<Envelope> envelope = EnvelopeFromJson(payload);
     if(!envelope || envelope->type != SharedTypes::groundCommandMessageType)
     {
@@ -90,10 +99,16 @@ void FlightComputerShell::HandleGroundCommand(const QByteArray &payload, const Q
     ackEnvelope.sequence = envelope->sequence;
     ackEnvelope.body["accepted"] = accepted;
     groundTelemetrySocket_.writeDatagram(EnvelopeToJson(ackEnvelope), senderAddress, senderPort);
+
+    if(accepted && command == SharedTypes::rebootCommand)
+        StartBoot();
 }
 
 void FlightComputerShell::UpdateLinkRow()
 {
+    if(booting_)
+        return;
+        
     const bool neverHeard = !timeSinceLastPacket_.isValid();
     const qint64 silentMillisecond = neverHeard ? 0 : timeSinceLastPacket_.elapsed();
     const bool linkLost = neverHeard || silentMillisecond > SharedTypes::linkLostMilliseconds;
@@ -123,4 +138,21 @@ void FlightComputerShell::SendGroundTelemetry(bool simLinkOk)
     {
         groundTelemetrySocket_.writeDatagram(datagram, address, SharedTypes::groundTelemetryPort);
     }
+}
+
+
+void FlightComputerShell::StartBoot()
+{
+    booting_ = true;
+    readoutsModel_.UpdateRow(linkRow, "Booting...", static_cast<int>(SharedTypes::Status::warning));
+    readoutsModel_.UpdateRow(modeRow, "Booting...", static_cast<int>(SharedTypes::Status::warning));
+    UpdateTelemetryReadouts(readoutsModel_, flightComputer_.GetTelemetry(), fcHeaderRowCount, true);
+    bootTimer_.start(bootDurationMilliseconds);
+}
+
+void FlightComputerShell::FinishBoot()
+{
+    booting_ = false;
+    timeSinceLastPacket_.invalidate();
+    std::cout << "Flight computer boot complete" << std::endl;
 }

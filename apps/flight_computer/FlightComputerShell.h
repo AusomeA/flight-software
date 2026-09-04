@@ -48,7 +48,11 @@ Q_OBJECT
     QTimer linkCheckTimer_;
     QElapsedTimer timeSinceLastPacket_;
 
+    QTimer bootTimer_;
+    bool booting_ = false;
+
     static constexpr int linkCheckIntervalMilliseconds = 200;
+    static constexpr int bootDurationMilliseconds = 5000;       // how long it takes the fc to boot
 
     void HandleTelemetry(const QByteArray &payload);
     void HandleGroundCommand(const QByteArray &payload, const QHostAddress &senderAddress, quint16 senderPort);
@@ -57,4 +61,7 @@ Q_OBJECT
     
     void PopulateRows();
     void UpdateRows(bool stale = false);
+
+    void StartBoot();
+    void FinishBoot();
 };

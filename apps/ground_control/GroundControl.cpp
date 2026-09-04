@@ -73,7 +73,14 @@ void GroundControl::UpdateLinkRow()
     const bool neverHeard = !timeSinceLastPacket_.isValid();
     const qint64 silentMilliseconds = neverHeard ? 0 : timeSinceLastPacket_.elapsed();
     const bool linkLost = neverHeard || silentMilliseconds > SharedTypes::linkLostMilliseconds;
+    const bool linkReturned = !flightComputerLinked_ && !linkLost;
     flightComputerLinked_ = !linkLost;
+
+    if(rebootInProgress_ && linkReturned)
+    {
+        rebootInProgress_ = false;
+        commandsModel_.UpdateRow(rebootRow, "Rebooted", static_cast<int>(SharedTypes::Status::good));
+    }
 
     readoutsModel_.UpdateRow(flightComputerLinkRow,
                              neverHeard ? "No Link" : linkLost ? QString("No Link (%1 s)").arg(silentMilliseconds / 1000.0, 0, 'f', 1)
@@ -202,6 +209,14 @@ void GroundControl::HandleCommandAck(qint64 sequence, bool accepted)
         return;
 
     const int commandRow = pendingCommands_.take(sequence);
+
+    if(accepted && commandRow == rebootRow)
+    {
+        rebootInProgress_ = true;
+        commandsModel_.UpdateRow(commandRow, "Rebooting...", static_cast<int>(SharedTypes::Status::warning));
+        return;
+    }
+
     commandsModel_.UpdateRow(commandRow, accepted ? "Accepted" : "Rejected", static_cast<int>(accepted ? SharedTypes::Status::good : SharedTypes::Status::critical));
 }
 

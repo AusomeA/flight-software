@@ -79,10 +79,6 @@ private:
     bool simLinkOk_ = false;
     bool flightComputerLinked_ = false;
 
-    ReadoutsModel commandsModel_;
-    AckUdpSender groundSender_;
-    QMap<qint64, int> pendingCommands_;
-
     static constexpr int linkCheckIntervalMilliseconds = 200;
 
     void HandleGroundTelemetry(const QByteArray &payload);
@@ -100,6 +96,12 @@ private:
     };
 
     QMap<qint64, PendingFault> pendingFaults_;
+
+    ReadoutsModel commandsModel_;
+    AckUdpSender groundSender_;
+    QMap<qint64, int> pendingCommands_;
+
+    bool rebootInProgress_ = false;
 
     static QString FaultName(int faultRow);
     void HandleFaultAck(qint64 sequence, bool accepted);
