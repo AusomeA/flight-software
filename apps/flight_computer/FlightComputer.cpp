@@ -46,6 +46,13 @@ bool FlightComputer::RequestExitSafeMode()
     return mode_ != SharedTypes::Mode::safe;
 }
 
+bool FlightComputer::Reboot()
+{
+    cout << "Flight computer rebooting" << endl;
+    *this = FlightComputer();
+    return true;
+}
+
 void FlightComputer::ModeCheck()
 {
     if (mode_ == SharedTypes::Mode::safe)

@@ -188,6 +188,22 @@ TEST(ModeCheck, ExitSafeModeRefusalCheck)
     EXPECT_EQ(commands.mode, SharedTypes::Mode::safe);
 }
 
+TEST(ModeCheck, RebootWithFaultActiveCheck)
+{
+    FlightComputer flightComputer;
+    SharedTypes::Telemetry telemetry = NominalTelemetry();
+
+    telemetry.temperatureSensorHealthy = false;
+    flightComputer.Update(telemetry);
+    EXPECT_EQ(flightComputer.GetMode(), SharedTypes::Mode::safe);
+
+    EXPECT_TRUE(flightComputer.Reboot());
+    EXPECT_EQ(flightComputer.GetMode(), SharedTypes::Mode::nominal);
+
+    SharedTypes::Commands commands = flightComputer.Update(telemetry);
+    EXPECT_EQ(commands.mode, SharedTypes::Mode::safe);
+}
+
 TEST(PayloadCheck, PayloadOnOffCheck)
 {
     FlightComputer flightComputer;

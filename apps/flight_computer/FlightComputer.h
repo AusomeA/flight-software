@@ -9,6 +9,7 @@ public:
 
     SharedTypes::Commands Update(const SharedTypes::Telemetry &telemetry);
     bool RequestExitSafeMode();
+    bool Reboot();
 
     SharedTypes::Mode GetMode() const { return mode_; }
 

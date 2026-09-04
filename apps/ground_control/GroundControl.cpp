@@ -18,7 +18,8 @@ GroundControl::GroundControl(QObject *parent)
     connect(&godSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleFaultAck);
     connect(&godSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleFaultGaveUp);
 
-    commandsModel_.SetRows({{"Exit Safe Mode", "Ready", static_cast<int>(SharedTypes::Status::none)}});
+    commandsModel_.SetRows({{"Exit Safe Mode", "Ready", static_cast<int>(SharedTypes::Status::none)},
+                             {"Reboot Flight Computer", "Ready", static_cast<int>(SharedTypes::Status::none)}});
     connect(&groundSender_, &AckUdpSender::Acknowledged, this, &GroundControl::HandleCommandAck);
     connect(&groundSender_, &AckUdpSender::GaveUp, this, &GroundControl::HandleCommandGaveUp);
 
@@ -188,6 +189,8 @@ QString GroundControl::CommandName(int commandRow)
     {
         case exitSafeModeRow:
             return SharedTypes::exitSafeModeCommand;
+        case rebootRow:
+            return SharedTypes::rebootCommand;
         default:
             return QString();
     }

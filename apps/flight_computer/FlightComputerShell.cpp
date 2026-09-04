@@ -80,6 +80,8 @@ void FlightComputerShell::HandleGroundCommand(const QByteArray &payload, const Q
 
     if(command == SharedTypes::exitSafeModeCommand)
         accepted = flightComputer_.RequestExitSafeMode();
+    else if(command == SharedTypes::rebootCommand)
+        accepted = flightComputer_.Reboot();
 
     std::cout << "Ground command " << command.toStdString() << (accepted ? " accepted" : " rejected") << std::endl;
 
