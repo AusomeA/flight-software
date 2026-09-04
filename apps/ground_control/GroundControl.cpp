@@ -188,7 +188,7 @@ void GroundControl::HandleFaultAck(qint64 sequence, bool accepted)
         return;
 
     const PendingFault fault = pendingFaults_.take(sequence);
-    cout << "Fault " << FaultName(fault.row).toStdString() << (fault.active ? " on" : "off") << (accepted ? " accepted" : " rejected") << endl;
+    cout << "Fault " << FaultName(fault.row).toStdString() << (fault.active ? " on" : " off") << (accepted ? " accepted" : " rejected") << endl;
 
     if (accepted)
         faultsModel_.UpdateRow(fault.row, fault.active ? "On" : "Off", static_cast<int>(fault.active ? SharedTypes::Status::critical : SharedTypes::Status::none));
