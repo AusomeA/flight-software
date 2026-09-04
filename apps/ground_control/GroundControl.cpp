@@ -1,6 +1,9 @@
 #include "GroundControl.h"
 #include "EnvelopeJson.h"
 #include "TelemetryReadouts.h"
+#include <iostream>
+
+using namespace std;
 
 GroundControl::GroundControl(QObject *parent)
     : QObject(parent),
@@ -74,11 +77,18 @@ void GroundControl::UpdateLinkRow()
     const qint64 silentMilliseconds = neverHeard ? 0 : timeSinceLastPacket_.elapsed();
     const bool linkLost = neverHeard || silentMilliseconds > SharedTypes::linkLostMilliseconds;
     const bool linkReturned = !flightComputerLinked_ && !linkLost;
+    const bool linkDropped = flightComputerLinked_ && linkLost;
     flightComputerLinked_ = !linkLost;
+
+    if(linkDropped)
+        cout << "Flight computer link lost" << endl;
+    if(linkReturned)
+        cout << "Flight computer link restored" << endl;
 
     if(rebootInProgress_ && linkReturned)
     {
         rebootInProgress_ = false;
+        cout << "Flight computer rebooted" << endl;
         commandsModel_.UpdateRow(rebootRow, "Rebooted", static_cast<int>(SharedTypes::Status::good));
     }
 
@@ -132,6 +142,7 @@ void GroundControl::SetFault(int faultRow, bool active)
     if (simulators.isEmpty())
     {
         faultsModel_.UpdateRow(faultRow, "No Simulator", static_cast<int>(SharedTypes::Status::critical));
+        cout << "No simulator to send fault " << faultName.toStdString() << " to" << endl;
         return;
     }
 
@@ -142,6 +153,7 @@ void GroundControl::SetFault(int faultRow, bool active)
     const qint64 sequence = godSender_.SendAck(SharedTypes::faultInjectionMessageType, body, simulators.first(), SharedTypes::godPort);
     pendingFaults_[sequence] = {faultRow, active};
     faultsModel_.UpdateRow(faultRow, active ? "Turning On..." : "Turning Off...", static_cast<int>(SharedTypes::Status::warning));
+    cout << "Sent fault " << faultName.toStdString() << (active ? " on" : " off") << endl;
 }
 
 void GroundControl::SendCommand(int commandRow)
@@ -157,6 +169,7 @@ void GroundControl::SendCommand(int commandRow)
     if(flightComputers.isEmpty())
     {
         commandsModel_.UpdateRow(commandRow, "No Flight Computer", static_cast<int>(SharedTypes::Status::critical));
+        cout << "No flight computer to send command " << commandName.toStdString() << " to" << endl;
         return;
     }
 
@@ -166,6 +179,7 @@ void GroundControl::SendCommand(int commandRow)
     const qint64 sequence = groundSender_.SendAck(SharedTypes::groundCommandMessageType, body, flightComputers.first(), SharedTypes::groundCommandPort);
     pendingCommands_[sequence] = commandRow;
     commandsModel_.UpdateRow(commandRow, "Sending...", static_cast<int>(SharedTypes::Status::warning));
+    cout << "Sent command " << commandName.toStdString() << endl;
 }
 
 void GroundControl::HandleFaultAck(qint64 sequence, bool accepted)
@@ -174,6 +188,7 @@ void GroundControl::HandleFaultAck(qint64 sequence, bool accepted)
         return;
 
     const PendingFault fault = pendingFaults_.take(sequence);
+    cout << "Fault " << FaultName(fault.row).toStdString() << (fault.active ? " on" : "off") << (accepted ? " accepted" : " rejected") << endl;
 
     if (accepted)
         faultsModel_.UpdateRow(fault.row, fault.active ? "On" : "Off", static_cast<int>(fault.active ? SharedTypes::Status::critical : SharedTypes::Status::none));
@@ -187,6 +202,7 @@ void GroundControl::HandleFaultGaveUp(qint64 sequence)
         return;
 
     const PendingFault fault = pendingFaults_.take(sequence);
+    cout << "Fault " << FaultName(fault.row).toStdString() << ": no response" << endl;
     faultsModel_.UpdateRow(fault.row, "No Response", static_cast<int>(SharedTypes::Status::critical));
 }
 
@@ -209,10 +225,12 @@ void GroundControl::HandleCommandAck(qint64 sequence, bool accepted)
         return;
 
     const int commandRow = pendingCommands_.take(sequence);
+    cout << "Command " << CommandName(commandRow).toStdString() << (accepted ? " accepted" : " rejected") << endl;
 
     if(accepted && commandRow == rebootRow)
     {
         rebootInProgress_ = true;
+        cout << "Flight computer rebooting..." << endl;
         commandsModel_.UpdateRow(commandRow, "Rebooting...", static_cast<int>(SharedTypes::Status::warning));
         return;
     }
@@ -226,5 +244,6 @@ void GroundControl::HandleCommandGaveUp(qint64 sequence)
         return;
 
     const int commandRow = pendingCommands_.take(sequence);
+    cout << "Command " << CommandName(commandRow).toStdString() << ": no response" << endl;
     commandsModel_.UpdateRow(commandRow, "No Response", static_cast<int>(SharedTypes::Status::critical));
 }
